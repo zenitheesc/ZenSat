@@ -51,7 +51,7 @@ int writeMessage(char *file_name, char *message, int position, int size, int che
 
     if (file != NULL){
         fseek(file, position*(size+check), SEEK_SET);
-        fwrite(message, size, 1, file); //We add 1 to PACK_SIZE because we need a byte to confirm the status of the package
+        fwrite(message, size, 1, file); 
         fclose(file);
         return 1;
     }
