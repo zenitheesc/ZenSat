@@ -1,0 +1,44 @@
+#Lib de https://github.com/chrisb2/pi_ina219
+#!/usr/bin/env python
+from ina219 import INA219
+from ina219 import DeviceRangeError
+
+SHUNT_OHMS = 0.1
+
+
+def read():
+    inabateria = INA219(SHUNT_OHMS, 3, address=0x40)
+    ina5v = INA219(SHUNT_OHMS, 1, address=0x44)
+    ina3v = INA219(SHUNT_OHMS, 3, address=0x41)
+    inabateria.configure()
+    ina5v.configure()
+    ina3v.configure()
+
+    print("Tensao bateria %.3f mV" % inabateria.voltage())
+    try:
+        print("Corrente bateria  %.3f mA" % inabateria.current())
+        print("Potencia bateria %.3f mW" % inabateria.power())
+        print("Shunt bateria %.3f mV" % inabateria.shunt_voltage())
+    except DeviceRangeError as e:
+        # Current out of device range with specified shunt resister
+        print(e)
+    print("Tensao 5v %.3f mV" % ina5v.voltage())
+    try:
+        print("Corrente 5v  %.3f mA" % ina5v.current())
+        print("Potencia 5v %.3f mW" % ina5v.power())
+        print("Shunt 5v %.3f mV" % ina5v.shunt_voltage())
+    except DeviceRangeError as e:
+        # Current out of device range with specified shunt resister
+        print(e)
+    print("Tensao 3v %.3f mV" % ina3v.voltage())
+    try:
+        print("Corrente 3v %.3f mA" % ina3v.current())
+        print("Potencia 3v %.3f mW" % ina3v.power())
+        print("Shunt 3v %.3f mV" % ina3v.shunt_voltage())
+    except DeviceRangeError as e:
+        # Current out of device range with specified shunt resister
+        print(e)
+
+
+if __name__ == "__main__":
+    read()
