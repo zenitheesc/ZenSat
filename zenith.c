@@ -171,7 +171,7 @@ int blockBuilder(char *block, int operating_mode, int aux){
 
     switch (operating_mode){
         case 0 : {
-            block = (char*)"I'mStillAlive"
+            block = (char*)"I'mStillAlive";
         }
         case 1 : { // Mission 1
             if(aux == 0){//Base code
