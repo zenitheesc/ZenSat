@@ -3,6 +3,7 @@
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 #include <PID_v1.h>
+#include <Wire.h>
 int w = 0;
 int set_time = 10;
 float k1 = 1;
@@ -21,13 +22,10 @@ int vel = 0;
 int acel_torque = 10;
 int desacel_torque = -10;
 int e = 0;
-
+int encoder_speed = 0;
 
 double Setpoint, Input, Output;
-
-//Specify the links and initial tuning parameters
 PID myPID(&Input, &Output, &Setpoint,0.2,1,0.1, DIRECT);
-
 
 #define BNO055_SAMPLERATE_DELAY_MS (100)
 
@@ -36,40 +34,30 @@ Adafruit_BNO055 bno = Adafruit_BNO055();
 void setup(void)
 {
   Serial.begin(9600);
-  Serial.println("Orientation Sensor Raw Data Test"); Serial.println("");
-
+  Wire.begin();
   if(!bno.begin())
   {
-    Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+    Serial.print("BNO falhou");
     while(1);
   }
 
   delay(1000);
-
   int8_t temp = bno.getTemp();
   Serial.print("Current Temperature: ");
   Serial.print(temp);
   Serial.println(" C");
   Serial.println("");
-
   bno.setExtCrystalUse(true);
-
-  Serial.println("Calibration status values: 0=uncalibrated, 3=fully calibrated");
   pinMode(Pin, OUTPUT);
   pinMode(Dir_Pin, OUTPUT);
   start();
-  TCCR1B = TCCR1B & B11111000 | B00000010;
-
   imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
   w = -1*gyro.z();
   Input = w;
   Setpoint = 0;
   myPID.SetOutputLimits(-100, 50);
   myPID.SetMode(AUTOMATIC);
-
-  
 }
-
 
 void loop(void)
 {
@@ -82,26 +70,18 @@ void loop(void)
   // - VECTOR_GRAVITY       - m/s^2
   imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
   imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
-
-  //Serial.print("z: ");
-  
+  Wire.requestFrom(8, 1);    
+  while (Wire.available()) { 
+    int read_speed = Wire.read()*120; 
+    Serial.println(read_speed); 
+  }
   delay(300);
-
-
   w = gyro.z();
   Input = w;
   myPID.Compute();
-  
-  
   vel = 100 + Output;
-
   Serial.println(vel);
-
-  
-  Serial.println(vel);
-  analogWrite(Pin, vel);
-
-
+  analogWrite(Pin, vel+50);
 
 }
 void start(){
