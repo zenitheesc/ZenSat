@@ -28,8 +28,9 @@
             int intToStr(int x, char str[], int d);
             void ftoa(float n, char *res, int afterpoint);
             int correctValue(int *values);
+            int headerInterface();
         //Package manipulation functions
-            int blockBuilder(char *block, int operating_mode, int aux);
+            int blockBuilder(char *block, int operating_mode, int whoami, int aux);
             int packageCreator(char *pack_num_file, char *pack_cycle_file, char *block, char *message);
             int missedPackagesChecker(int expected_package, int received_package, int expected_cycle, int received_cycle);
             int packageAnalyzer();
@@ -39,9 +40,15 @@
         //Communication functions
             //int write_i2c(char *file_name, int packet, int qt, int addr,int chan);
             //int read_i2c(char *file_name, int position, int addr,int chan);
-            int sendSimpleMessage(char *block, int op_moode, int aux);
+            int sendSimpleMessage(char *block, int op_mode, int whoami, int aux);
+        //CubeSat missions functions
+            int standardState();
+            int healthInfo();
+            int powerSupplyCheck();
+            int oneAxisStabilization();
+            int horizonDetermination();
+            int pointing();
         //Base interface functions
-            int headerInterface();
             int interfaceOperator();
             int displayData(char *package);
             int changeOperatingMode();
@@ -49,22 +56,19 @@
             int readPackages(int mode);
             int changeToMasterMode();
             int shutdownZenSat();
-        //Install functions
-            int createFile(char *file_name);
-            int createZenithFiles();
-            int compileCodes(int mode);
-            int installer();
-
-            int sendlandeira(char* package);
-            int file_size(char* FILE_NAME);
-            int livefeed_tx(char *FILE_NAME);
-
-
         //Main functions
             int CubeSat();
             int Base();
         //Test functions
             int CubeSatTest();
+            int sendlandeira(char* package);
+            int file_size(char* FILE_NAME);
+            int livefeed_tx(char *FILE_NAME);
+        //Install functions
+            int createFile(char *file_name);
+            int createZenithFiles();
+            int compileCodes(int mode);
+            int installer();
 
 
 #endif //CODE_ZENITH_H

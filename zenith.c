@@ -164,25 +164,46 @@ int correctValue(int *values){
     }
 }
 
+int headerInterface(){
+    system("clear");
+    printf("=========================================================================\n");
+    printf("=                          CubeSat v1 - ZenSat                          =\n");
+    printf("=========================================================================\n");
+    return 0;
+}
+
 
 //Package manipulation functions
 
-int blockBuilder(char *block, int operating_mode, int aux){
+int blockBuilder(char *block, int operating_mode, int whoami, int aux){
+
+    int i = 0;
+
+    for (i=0;i<BLOCK_SIZE;i++){ block[i] = 0; }
 
     switch (operating_mode){
+
         case 0 : {
-            block = (char*)"I'mStillAlive";
+            if (whoami == 1){
+                block = (char*)"I'mStillAlive";
+            }
+            else { printf("whoami incorrect. \n"); }
+            break;
         }
         case 1 : { // Mission 1
-            if(aux == 0){//Base code
+            if (whoami == 0){//Base code
+                block[0] = 'Z';
+                block[1] = 'e';
+                block[2] = 'n';
+                block[3] = 'S';
+                block[4] = 'a';
+                block[5] = 't';
+                block[6] = '\0';
+            }
+            else if (whoami == 1){//ZenSat code
 
             }
-            else if (aux == 1){//ZenSat code
-
-            }
-            else{
-
-            }
+            else{ printf("whoami incorrect. \n"); }
             break;
         }
         case 2 : {
@@ -196,18 +217,11 @@ int blockBuilder(char *block, int operating_mode, int aux){
             break;
         }
         case 7 : { break; }
-        case 10: {
-            char temp[255];
-            valueGetter(TC_NUMBER, &aux);
-            readMessage(TC_FILE, temp, aux, PACK_SIZE, 1);
-            for (aux=0;aux<PACK_SIZE;aux++){
-                if((aux >= 3) && (aux <= 122)){
-                    block[aux - 3] = temp[aux];
-                }
-                else if ((aux >= 125) && (aux <= 251)){
-                    block[aux - 5] = temp[aux];
-                }
-            }
+        case 8 : { break; }
+        case 9 : { //Mission failed once or twice
+            break;
+        }
+        case 10 : { //Mission failed three times
             break;
         }
         default:{ return 0; }
@@ -219,6 +233,7 @@ int packageCreator(char *pack_num_file, char *pack_cycle_file, char *block, char
 
     int i;
     int aux;
+    int position;
     int pack_number;
     int pack_cycle;
     int op_mode;
@@ -261,6 +276,10 @@ int packageCreator(char *pack_num_file, char *pack_cycle_file, char *block, char
             package[i] = *(block+(i-5));
         }
     }
+
+    position = pack_cycle*PACK_SIZE + pack_number;
+    writeMessage(TM_FILE, package, position, PACK_SIZE, 0);
+
     return 0;
 } //finished
 
@@ -347,17 +366,18 @@ int packageAnalyzer(){
                 }
             }
             else{
-                printf("\nCorrupted package");
+                printf("Corrupted package\n");
                 return 0;
             }
         }
         else{
-            printf("\nCorrupted package");
+            printf("Corrupted package\n");
             return 0;
         }
         return 1;
     }
     else{
+        printf("Corrupted package\n");
         return 0;
     }
 }
@@ -380,6 +400,37 @@ int createBackup(){
     system("cp " MODE_FILE       " "  MODE_FILE_CP       );
     system("cp " HEALTH_FILE     " "  HEALTH_FILE_CP     );
     system("cp " HEALTH_NUMBER   " "  HEALTH_NUMBER_CP   );
+    system("cp " PS_FILE         " "  PS_FILE_CP         );
+    system("cp " PS_NUMBER       " "  PS_NUMBER_CP       );
+    system("cp " ADC_FILE        " "  ADC_FILE_CP        );
+    system("cp " ADC_NUMBER      " "  ADC_NUMBER_CP      );
+    system("cp " CV_FILE         " "  CV_FILE_CP         );
+    system("cp " CV_NUMBER       " "  CV_NUMBER_CP       );
+
+    return 0;
+}
+
+int recoveryFiles(){
+
+    system("cp " CHECK_POWERED_CP   " "  CHECK_POWERED   );
+    system("cp " NEW_TM_CP          " "  NEW_TM          );
+    system("cp " TM_FILE_CP         " "  TM_FILE         );
+    system("cp " TM_NUMBER_CP       " "  TM_NUMBER       );
+    system("cp " TM_CYCLE_CP        " "  TM_CYCLE        );
+    system("cp " NEW_TC_CP          " "  NEW_TC          );
+    system("cp " TC_FILE_CP         " "  TC_FILE         );
+    system("cp " TC_NUMBER_CP       " "  TC_NUMBER       );
+    system("cp " TC_CYCLE_CP        " "  TC_CYCLE        );
+    system("cp " MISSED_PACKAGES_CP " "  MISSED_PACKAGES );
+    system("cp " MODE_FILE_CP       " "  MODE_FILE       );
+    system("cp " HEALTH_FILE_CP     " "  HEALTH_FILE     );
+    system("cp " HEALTH_NUMBER_CP   " "  HEALTH_NUMBER   );
+    system("cp " PS_FILE_CP         " "  PS_FILE         );
+    system("cp " PS_NUMBER_CP       " "  PS_NUMBER       );
+    system("cp " ADC_FILE_CP        " "  ADC_FILE        );
+    system("cp " ADC_NUMBER_CP      " "  ADC_NUMBER      );
+    system("cp " CV_FILE_CP         " "  CV_FILE         );
+    system("cp " CV_NUMBER_CP       " "  CV_NUMBER       );
 
     return 0;
 }
@@ -389,9 +440,26 @@ int initializingCubeSat(int check){
     printf("Initializing Zenith CubeSat...\n");
     if(check == 0){
         printf("CubeSat is initilizing for the first time... \n");
+
+        valueSetter(CHECK_POWERED  , 1);
+        valueSetter(TM_NUMBER      , 0);
+        valueSetter(TM_CYCLE       , 0);
+        valueSetter(TC_NUMBER      , 0);
+        valueSetter(TC_CYCLE       , 0);
+        valueSetter(MISSED_PACKAGES, 0);
+        valueSetter(HEALTH_NUMBER  , 0);
+        valueSetter(PS_NUMBER      , 0);
+        valueSetter(ADC_NUMBER     , 0);
+        valueSetter(CV_NUMBER      , 0);
     }
     else if (check == 1){
-
+        printf("CubeSat is not initializing for the first time...\n");
+        printf("Activating recovery mode...\n");
+        delay(1000000);
+        recoveryFiles();
+        printf("Recovering system...\n");
+        delay(3000000);
+        printf("System recovered.\n");
     }
     else{
         printf("ERROR - System cracked.\n");
@@ -552,344 +620,169 @@ int read_i2c(char *file_name, int position, int addr,int chan){
 
 */
 
-int sendSimpleMessage(char *block, int op_mode, int aux){
+int sendSimpleMessage(char *block, int op_mode, int whoami, int aux){
 
+    int check;
     char pack[PACK_SIZE];
 
-    blockBuilder(block, op_mode, aux);
+    blockBuilder(block, op_mode, whoami, aux);
     packageCreator(TM_NUMBER, TM_CYCLE, block, pack);
     writeMessage(NEW_TM, pack, 0, PACK_SIZE, 0);
-    //write_i2c(NEW_TM, 0, 1, adr, chanel);
-
-    return 0;
-}
-
-
-//Install functions
-
-int createFile(char *file_name){
-
-    FILE * file;
-
-    printf("Creating file %s ...\n", file_name);
-    //delay(800000);
-
-    file = fopen(file_name, "wb");
-    if (file != NULL){
-        fclose(file);
-        printf("File %s created.\n");
+    //check = write_i2c(NEW_TM, 0, 1, adr, chanel);
+    if (check == 1){
         return 1;
     }
     else{
-        printf("ERROR - File %s cannot be created.\n", file_name);
         return 0;
     }
 }
 
-int createZenithFiles(){
 
-    int i = 0;
+//CubeSat missions functions
+
+int standardState(){
+
+    int loop_control;
+    int check_received;
+    int check_package;
     int counter = 0;
-    int aux[12];
-
-    aux[ 0] = createFile(CHECK_POWERED);
-    aux[ 1] = createFile(NEW_TM);
-    aux[ 2] = createFile(TM_FILE);
-    aux[ 3] = createFile(TM_NUMBER);
-    aux[ 4] = createFile(TM_CYCLE);
-    aux[ 5] = createFile(NEW_TC);
-    aux[ 6] = createFile(TC_FILE);
-    aux[ 7] = createFile(TC_NUMBER);
-    aux[ 8] = createFile(TC_CYCLE);
-    aux[ 9] = createFile(MISSED_PACKAGES);
-    aux[10] = createFile(MODE_FILE);
-    aux[11] = createFile(HEALTH_FILE);
-    aux[12] = createFile(HEALTH_NUMBER);
-
-    for (i=0;i<12;i++){
-        if (aux[i] != 0){
-            counter ++;
-        }
-    }
-
-    if   (counter>0) { printf("\n%d files cannot be created", counter); return 1;}
-    else { printf("\nFiles successfully created");                      return 0;}
-}
-
-int compileCodes(int mode){
-
-    if (mode == 1){
-        printf("Compiling cube.c file... \n");
-        //delay(600000);
-        system("gcc cube.c -o cube");
-        printf("File cube.c was already compiled.");
-        //delay(600000);
-    }
-    else if (mode == 2){
-        printf("Compiling base.c file... \n");
-        //delay(600000);
-        system("gcc base.c -o base");
-        printf("File base.c was already compiled. \n");
-        //delay(600000);
-    }
-    else if (mode == 3){
-        printf("Compiling cube.c file... \n");
-        //delay(600000);
-        system("gcc cube.c -o cube");
-        printf("File cube.c was already compiled.");
-        //delay(600000);
-        printf("Compiling base.c file... \n");
-        //delay(600000);
-        system("gcc base.c -o base");
-        printf("File base.c was already compiled. \n");
-        //delay(600000);
-    }
-    else {
-        printf("This mode of compilation is not valid");
-    }
-    return 0;
-}
-
-int installer(){
-
-    int mode;
+    char block[BLOCK_SIZE];
 
     system("clear");
-    printf("Zenith Cube Sat v.1.0 installer ... \n");
-    printf("Press 1 - to install CubeSat version; 2 - to install Base version; 3 - to install both;\n");
-    scanf("%d", &mode);
-    //delay(1500000);
-    printf("Creating files... \n");
-    createZenithFiles();
-    printf("Compiling files... \n");
-    compileCodes(mode);
-    //delay(1000000);
-    printf("zenith.h is already installed!");
-    //delay(2000000);
-
+    printf("Operating mode 0 - Standard mode\n");
+    while (loop_control == 0) {
+        delay(2000000);
+        printf("Checking microcontroller for new commands - Attempt: %d; \n", counter + 1);
+        //temp = read_i2c(NEW_TC); //PASSAR ARGS
+        if (check_received == 1) {
+            printf("Message received!\n");
+            printf("Analyzing message and setting the system...\n");
+            check_package = packageAnalyzer();
+            if (check_package == 1){
+                printf("System seted. \nInitializing new actions.\n");
+                delay(800000);
+                loop_control = 1;
+            }
+            else{
+                printf("Waiting for new packages...\n");
+                counter = 0;
+                delay(1000000);
+                system("clear");
+                printf("Operating mode 0 - Standard mode\n");
+            }
+        }
+        else if (check_received == 0) {
+            counter++;
+            if (counter == 15) {
+                counter = 0;
+                sendSimpleMessage(block, 0, 1, 0);
+                system("clear");
+                printf("Operating mode 0 - Standard mode\n");
+            }
+        }
+    }
     return 0;
 }
 
+int healthInfo(){
 
-//Livefeed functions
-
-int sendlandeira(char* package){
-    FILE *fp = fopen("partidocomunista", "ab");
-
-    fwrite(package, 1, BLOCK_SIZE, fp);
-
-    fclose(fp);
-
-    return 1;
-}
-
-int file_size(char* FILE_NAME){
-    FILE *fp = fopen(FILE_NAME, "rb");
-
-    if(fp == NULL){
-        printf("Error opening file!\n");
-        fclose(fp);
-
-        return 0;
-    }
-
-    fseek(fp, 0, SEEK_END);
-    int length = ftell(fp);
-    fclose(fp);
-
-    return length;
-}
-
-int livefeed_tx(char *FILE_NAME){
-
-    int picture_size, packages_num, last_size, i;
+    int  block_position;
     char block[BLOCK_SIZE];
     char package[PACK_SIZE];
-    picture_size = file_size(FILE_NAME);
+    int check;
 
-    if(picture_size == 0){
+    system("clear");
+    printf("Operating mode 1 - Sending a simple message about Cubesat Health\n");
+    printf("Requiring Power Supply System informations ...\n");
+    //REQUERER INFORMAÇÕES DO PS, ESTAS DEVEM SER SALVAS EM SEUS RESPECTIVOS ARQUIVOS
+    //MOSTRAR EM TELA ESSAS INFORMAÇÕES (para checagem de sistema, depois deve ser comentado)
+    printf("Requiring ADC System informations...\n");
+    //REQUERER INFORMAÇÕES DO ADC, ESTAS DEVEM SER SALVAS EM SEUS RESPECTIVOS ARQUIVOS
+    //MOSTRAR EM TELA ESSAS INFORMAÇÕES (para checagem de sistema, depois deve ser comentado)
+
+    printf("Building and sending the package...\n");
+    check = sendSimpleMessage(block, 1, 1, 0);
+
+    if (check==1){
+        printf("Package sended.\n Mission 1 - completed.");
+        return 1;
+    }
+    else {
+        printf("The package cannot be sended.\n Mission 1 - failed.");
         return 0;
-    }
-
-    packages_num = picture_size/BLOCK_SIZE;
-    last_size = picture_size%BLOCK_SIZE;
-
-
-    for(i = 0; i < (packages_num - 1); i++){
-        blockBuilder(block, 6, i);
-        packageCreator(TM_NUMBER, TM_CYCLE, block, package);
-        sendlandeira(block);
-    }
-
-    if(i == (packages_num - 1)){
-        FILE *fp = fopen(FILE_NAME, "rb");
-
-        if(fp != NULL){
-            fseek(fp, BLOCK_SIZE*i, SEEK_SET);
-            fread(block, 1, last_size, fp);
-
-            for(int j = last_size; j < BLOCK_SIZE; j++){
-                block[j] = 0;
-            }
-
-            packageCreator(TM_NUMBER, TM_CYCLE, block, package);
-            sendlandeira(block);
-
-            return 1;
-        }
     }
 }
 
-/*
-int writeI2C(char *file_name, int packet, int qt, int addr, int chan){
+int powerSupplyCheck(){
 
-    FILE *file;
-    int i;
-    char message[256];
-    int file_i2c = 0;
-    int length;
-    int a = 0;
-    int v = 0;
-    int y = 0;
-    char buffer[256] = {0};
-    char send[256] = {0};
-    char env[256] = {0};
-    if (chan == 1){
-        char *filename = (char*)"/dev/i2c-1";
+    int block_position;
+    char block[BLOCK_SIZE];
+    int check = 0;
+
+    system("clear");
+    printf("Operating mode 2 - Checking current and voltage\n");
+    printf("Requiring Power Supply System informations ...\n");
+    //REQUERER INFORMAÇÕES DO PS, ESTAS DEVEM SER SALVAS EM SEUS RESPECTIVOS ARQUIVOS
+    //MOSTRAR EM TELA ESSAS INFORMAÇÕES (para checagem de sistema, depois deve ser comentado)
+
+
+    printf("Building and sending the package...\n");
+    valueGetter(PS_NUM, &block_position);
+    check = sendSimpleMessage(block, 2, 1, block_position);
+
+    if (check == 1){
+        printf("Package sended.\n Mission 2 - completed.");
+        return 1;
     }
-    else{
-        if (chan == 2)
-            char *filename = (char*)"/dev/i2c-2";
-        else
-            return 0;
-    }
-    file = fopen(file_name, "r+b");
-    if (file != NULL){
-        fseek(file, packet*(PACK_SIZE), SEEK_SET);
-        fread(message, PACK_SIZE, qt, file);
-        fclose(file);
-    }
-    else{
-        printf("Failed to open &s file", file_name);
+    else {
+        printf("The package cannot be sended.\n Mission 2 - failed.");
         return 0;
     }
-    if ((file_i2c = open(filename, O_RDWR)) < 0){
-        printf("Failed to open the i2c bus");
-        return 0;
-    }
-
-    if (ioctl(file_i2c, I2C_SLAVE, addr) < 0){
-        printf("Failed to acquire bus access and/or talk to slave.\n");
-        return 0;
-    }
-    for (y = 0; y<qt;y++){
-        length = 32;
-        for (a = 0; a<7; a++){
-            for (v = 0;v<32;v++){
-                env[v] = message[a*32 + y*255 + v];
-            }
-            write(file_i2c, env, length);
-        }
-        length = 31;
-        for (v = 0;v<31;v++){
-            env[v] = message[7*32 + y*255 + v];
-        }
-        write(file_i2c, env, length);
-
-    }
-
-    return 1;
 }
 
-int readI2C(char *file_name, int position, int addr,int chan){
+int oneAxisStabilization(){
 
-    FILE *file;
-    int i = 0;
-    int file_i2c = 0;
-    int length;
-    int a = 0;
-    int aux = 1;
-    int b = 0;
-    int v = 0;
-    char message[256];
-    char buffer[256] = {0};
-    char send[256] = {0};
-    char rec[256] = "";
-    char env[256] = {0};
+    int block_position;
+    char block[BLOCK_SIZE];
 
-    if (chan == 1){
-        char *filename = (char*)"/dev/i2c-1";
+    system("clear");
+    printf("Operating mode 3 - ZenSat stabilization\n");
+    printf("Activating reaction wheel stabilization mode...\n");
+    //ATIVAR MODO DE ESTABILIZAÇÃO
+    //ESPERAR FINALIZAÇÃO (o stm deverá manter-se ativado para que o cubesat continue estabilizado)
+    printf("ZenSat stabilized!\n");
+    printf("Requiring ADC System informations...\n");
+    //REQUERER INFORMAÇÕES DO ADC, ESTAS DEVEM SER SALVAS EM SEUS RESPECTIVOS ARQUIVOS
+    //MOSTRAR EM TELA ESSAS INFORMAÇÕES (para checagem de sistema, depois deve ser comentado)
+
+    printf("Building and sending the package...\n");
+    valueGetter(ADC_NUM, &block_position);
+    check = sendSimpleMessage(block, 3, 1, block_position );
+    //ESSE PROVAVELMENTE N SERA O CHECK QUE DIRA SE A MISSÃO FOI CONCLUÍDA OU NÃO
+    if (check==1){
+        printf("Package sended.\n Mission 3 - completed.");
+        return 1;
     }
-    else{
-        if (chan == 2) {
-            char *filename = (char *) "/dev/i2c-2";
-        }
-        else{
-            return 0;
-        }
-    }
-
-    if ((file_i2c = open(filename, O_RDWR)) < 0){
-        printf("Failed to open the i2c bus");
+    else {
+        printf("The package cannot be sended.\n Mission 3 - failed.");
         return 0;
     }
-
-    if (ioctl(file_i2c, I2C_SLAVE, addr) < 0) {
-        printf("Failed to acquire bus access and/or talk to slave.\n");
-        return 0;
-    }
-
-    length = 32;
-
-    for (a = 0; a<7; a++){
-        read(file_i2c, env, length);
-        strcat(rec,env);
-    }
-
-    length = 31;
-    read(file_i2c, env, length);
-    strcat(rec,env);
-    aux = rec[3];
-    auxi = aux - 1;
-    if (rec[2] == 0) {
-        return 0;
-    }
-    while (auxi > 0){
-        length = 32;
-        for (a = 0; a<7; a++){
-            read(file_i2c, env, length);
-            strcat(rec,env);
-        }
-        length = 31;
-        read(file_i2c, env, length);
-        strcat(rec,env);
-        auxi--;
-    }
-
-    file = fopen(file_name, "r+b");
-
-    if (file != NULL){
-        fseek(file, position*(PACK_SIZE), SEEK_SET);
-        fwrite(rec, PACK_SIZE, aux, file);
-        fclose(file);
-    }
-    else{
-        return 0;
-    }
-
-    return 1;
 }
-*/
 
-//Base interface functions
-
-int headerInterface(){
-    system("cls");
-    printf("=========================================================================\n");
-    printf("=                          CubeSat v1 - ZenSat                          =\n");
-    printf("=========================================================================\n");
+int horizonDetermination(){
     return 0;
 }
+
+int pointing(){
+    return 0;
+}
+
+int livefeed(int mode){
+    return 0;
+}
+
+
+//Base interface functions
 
 int interfaceOperator(){
 
@@ -969,12 +862,14 @@ int changeOperatingMode(){
     switch (op) {
         case 1: {
 
-            sendSimpleMessage(block,op,0);
-            displayData(package);
+            sendSimpleMessage(block,op,0,0);
+            readMessage(NEW_TM, package, 0, PACK_SIZE, 0);
+            printf("\n\n\n%s", package);
+            //displayData(package);
             //CRIAR PACOTE DE MUDANÇA DE MODE COM INFO NECESSÁRIA
             //ESPERAR POR PACOTE DE INFO
             //PRINTAR INFO
-            displayData(package);
+            //displayData(package);
             break;
         }
         case 2: {
@@ -1060,7 +955,7 @@ int readPackages(int mode){
     else if (mode == 1){ readMessage(TM_FILE, package, pack_num, PACK_SIZE, 0);}
     else { printf("\nInvalid mode"); return 0; }
 
-    displayData(package);
+    //displayData(package);
 
     return 1;
 }
@@ -1092,17 +987,20 @@ int shutdownZenSat(){
     char temp;
 
     headerInterface();
-    printf("Do you really want to shutdown ZenSat? (y,n) ");
+    printf("Do you really want to shutdown ZenSat? (y,n)");
+    fflush(stdin);
     scanf("%c", &temp);
-    printf("\nPassword: ");
-    scanf("%d", &password);
-    if (password == PASSWORD){
-        system("clear");
-        printf("Shutting down ZenSat ... ");
-        //ENVIAR COMANDO DE DESLIGAR
-        //ESPERAR POR CONFIRMAÇÃO
-        printf("\nZenSat power off.\nGood bye!");
-        delay(1500000);
+    if(temp == 'y'){
+        printf("\nPassword: ");
+        scanf("%d", &password);
+        if (password == PASSWORD) {
+            headerInterface();
+            printf("Shutting down ZenSat ... ");
+            //ENVIAR COMANDO DE DESLIGAR
+            //ESPERAR POR CONFIRMAÇÃO
+            printf("\nZenSat power off.\nGood bye!\n");
+            delay(1500000);
+        }
     }
     else {
         printf("\n Wrong password!");
@@ -1116,104 +1014,70 @@ int shutdownZenSat(){
 int CubeSat(){
 
     /* *****************  Variable declarations  ***************** */
-    //Control variables
+
     int check_powered = 0;
-    int control = 0;
-    //Auxiliary variables
-    int aux = 0;
-    int temp = 0;
-    //Auxiliary counter
-    int count = 0;
-    //TM and TC control variables
-    int tm_pack_number = 0;
-    int tm_cycle_number = 0;
-    int tc_pack_number = 0;
-    int tc_cycle_number = 0;
+    int main_loop_control = 0;
+    int mission_check = 0;
+    int mission_counter = 0;
     int operating_mode = 0;
     int previous_operating_mode = 0;
-    int block_position = 0;
     char block[BLOCK_SIZE];
-    char tm[PACK_SIZE];
-    char tc[PACK_SIZE];
+    char pack[PACK_SIZE];
+
 
     /* *****************  System Initilization  ***************** */
+
     valueGetter(CHECK_POWERED, &check_powered);
     initializingCubeSat(check_powered);
-
     valueGetter(MODE_FILE, &operating_mode );
-    valueGetter(TM_NUMBER, &tm_pack_number );
-    valueGetter(TM_CYCLE , &tm_cycle_number);
-    valueGetter(TC_NUMBER, &tc_pack_number );
-    valueGetter(TC_CYCLE , &tc_cycle_number);
 
 
     /* *****************  Functional mode  ***************** */
-    while (control == 0) {
+
+    while (main_loop_control == 0) {
         switch (operating_mode) {
             case 0: {
-                system("clear");
-                printf("Operating mode 0 - Standard mode, waiting for commands");
-                while (aux == 0) {
-                    delay(2000000);
-                    //temp = read_i2c(NEW_TC); //PASSAR ARGS
-                    if (temp == 1){
-                        printf("\nMessage received!");
-                        readMessage(NEW_TC, tc, 0, PACK_SIZE, 0);
-                        printf("%s", tc);
-                        packageAnalyzer();
-                        aux = 1;  //Exit loop
-                    }
-                    else if (temp == 0){
-                        count ++;
-                        printf("\nAttempt %d", count);
-                        if (count > 15){
-                            count = 0;
-                            blockBuilder(block, 0, 0);
-                        }
+                standardState();
+                valueGetter(MODE_FILE, &operating_mode);
+                break;
+            }
+            case 1: { //Health Telemetry mode
+                mission_check = healthInfo(operating_mode);
+                if (mission_check == 1){
+                    mission_counter = 0;
+                    operating_mode = 0;
+                    valueSetter(MODE_FILE, operating_mode);
+                }
+                else{
+                    mission_counter ++;
+                    sendSimpleMessage(block, 9, 1, operating_mode);
+                    if (mission_counter == 3){
+                        mission_counter = 0;
+                        sendSimpleMessage(block, 10, 1, operating_mode);
                     }
                 }
                 break;
             }
-            case 1: {
-                system("clear");
-                printf("Operating mode 1 - Sending a simple message about Cubesat Health");
-                valueGetter(HEALTH_NUMBER, &block_position);
-                blockBuilder(block, operating_mode, block_position);
-                packageCreator(TM_NUMBER, TM_CYCLE, block, tm);
-                writeMessage(NEW_TM, tm, 0, PACK_SIZE, 0);
-                //write_i2c(NEW_TM, 0, 1, ,);
-                printf("Message sended: \n    %s", tm);
-
-                valueSetter(MODE_FILE, 0);
-                valueGetter(MODE_FILE, &operating_mode);
-                break;
-            }
             case 2: { //Power Supply Mode
-                system("clear");
-                printf("Operating mode 2 - Checking current and voltage");
-                //PS();
-                blockBuilder(block,2,0); //ESCREVER CODIGO NO BLOCK BUILDER
-                packageCreator(TM_NUMBER,TC_CYCLE, block, tm);
-                writeMessage(TM_FILE, tm, tm_pack_number, PACK_SIZE, 0);
-                //packSender(tm);
-
-                valueSetter(MODE_FILE, 0);
-                valueGetter(MODE_FILE, &operating_mode);
-                break;
+                mission_check = powerSupplyCheck();
+                if (mission_check == 1){
+                    mission_counter = 0;
+                    operating_mode = 0;
+                    valueSetter(MODE_FILE, operating_mode);
+                }
+                else{
+                    mission_counter ++;
+                    sendSimpleMessage(block, 9, 1, operating_mode);
+                    if (mission_counter == 3){
+                        mission_counter = 0;
+                        sendSimpleMessage(block, 10, 1, operating_mode);
+                    }
+                }break;
             }
             case 3: { //ADC stabilization
-                system("clear");
-                printf("Operating mode 3 - ADC stabilization");
-
-                blockBuilder(block,3,0); //ESCREVER CODIGO NO BLOCK BUILDER
-                packageCreator(TM_NUMBER,TC_CYCLE, block, tm);
-                writeMessage(TM_FILE, tm, tm_pack_number, PACK_SIZE, 0);
-
-                valueSetter(MODE_FILE, 0);
-                valueGetter(MODE_FILE, &operating_mode);
                 break;
             }
-            case 4: { //OpenCV determination
+            case 4: { //Horizon determination
                 system("clear");
                 printf("Operating mode 4 - Horizon determination");
 
@@ -1239,20 +1103,24 @@ int CubeSat(){
             }
             case 7: {
                 system("clear");
-                printf("You are on mode 7");
+                printf("Operating mode 7 - Checking ZenSat temperature");
 
                 valueSetter(MODE_FILE, 0);
                 valueGetter(MODE_FILE, &operating_mode);
                 break;
             }
-            default: {
+            case 9: {
                 system("clear");
-
+                printf("Operating mode 9 - Shutdown");
+                main_loop_control = 1;
+            }
+            default: {
                 valueSetter(MODE_FILE, 0);
                 valueGetter(MODE_FILE, &operating_mode);
                 break;
             }
         }
+        createBackup();
     }
 }
 
@@ -1280,7 +1148,74 @@ int Base(){
 }
 
 
-//Test functions
+//Test function
+
+int sendlandeira(char* package){
+    FILE *fp = fopen("partidocomunista", "ab");
+
+    fwrite(package, 1, BLOCK_SIZE, fp);
+
+    fclose(fp);
+
+    return 1;
+}
+
+int file_size(char* FILE_NAME){
+    FILE *fp = fopen(FILE_NAME, "rb");
+
+    if(fp == NULL){
+        printf("Error opening file!\n");
+        fclose(fp);
+
+        return 0;
+    }
+
+    fseek(fp, 0, SEEK_END);
+    int length = ftell(fp);
+    fclose(fp);
+
+    return length;
+}
+
+int livefeed_tx(char *FILE_NAME){
+
+    int picture_size, packages_num, last_size, i;
+    char block[BLOCK_SIZE];
+    char package[PACK_SIZE];
+    picture_size = file_size(FILE_NAME);
+
+    if(picture_size == 0){
+        return 0;
+    }
+
+    packages_num = picture_size/BLOCK_SIZE;
+    last_size = picture_size%BLOCK_SIZE;
+
+
+    for(i = 0; i < (packages_num - 1); i++){
+        blockBuilder(block, 6, i);
+        packageCreator(TM_NUMBER, TM_CYCLE, block, package);
+        sendlandeira(block);
+    }
+
+    if(i == (packages_num - 1)){
+        FILE *fp = fopen(FILE_NAME, "rb");
+
+        if(fp != NULL){
+            fseek(fp, BLOCK_SIZE*i, SEEK_SET);
+            fread(block, 1, last_size, fp);
+
+            for(int j = last_size; j < BLOCK_SIZE; j++){
+                block[j] = 0;
+            }
+
+            packageCreator(TM_NUMBER, TM_CYCLE, block, package);
+            sendlandeira(block);
+
+            return 1;
+        }
+    }
+}
 
 int CubeSatTest(){
     int i = 0;
@@ -1317,6 +1252,118 @@ int CubeSatTest(){
         printf("\nDigite 1 para sair.\n");
         scanf ("%d", &i);
     }
+
+    return 0;
+}
+
+
+//Install functions
+
+int createFile(char *file_name){
+
+    FILE * file;
+
+    printf("Creating file %s ...\n", file_name);
+    delay(800000);
+
+    file = fopen(file_name, "wb");
+    if (file != NULL){
+        fclose(file);
+        printf("File %s created.\n", file_name);
+        return 1;
+    }
+    else{
+        printf("ERROR - File %s cannot be created.\n", file_name);
+        return 0;
+    }
+}
+
+int createZenithFiles(){
+
+    int i = 0;
+    int counter = 0;
+    int aux[19];
+
+    aux[ 0] = createFile(CHECK_POWERED);
+    aux[ 1] = createFile(NEW_TM);
+    aux[ 2] = createFile(TM_FILE);
+    aux[ 3] = createFile(TM_NUMBER);
+    aux[ 4] = createFile(TM_CYCLE);
+    aux[ 5] = createFile(NEW_TC);
+    aux[ 6] = createFile(TC_FILE);
+    aux[ 7] = createFile(TC_NUMBER);
+    aux[ 8] = createFile(TC_CYCLE);
+    aux[ 9] = createFile(MISSED_PACKAGES);
+    aux[10] = createFile(MODE_FILE);
+    aux[11] = createFile(HEALTH_FILE);
+    aux[12] = createFile(HEALTH_NUMBER);
+    aux[13] = createFile(PS_FILE);
+    aux[14] = createFile(PS_NUMBER);
+    aux[15] = createFile(ADC_FILE);
+    aux[16] = createFile(ADC_NUMBER);
+    aux[17] = createFile(CV_FILE);
+    aux[18] = createFile(CV_NUMBER);
+
+    for (i=0;i==19;i++){
+        if (aux[i] == 0){
+            counter ++;
+        }
+    }
+
+    if   (counter>0) { printf("\n%d files cannot be created", counter); return 1;}
+    else { printf("\nFiles successfully created");                      return 0;}
+}
+
+int compileCodes(int mode){
+
+    if (mode == 1){
+        printf("Compiling cube.c file... \n");
+        delay(600000);
+        system("gcc cube.c -o cube -lm");
+        printf("File cube.c was already compiled.");
+        delay(600000);
+    }
+    else if (mode == 2){
+        printf("Compiling base.c file... \n");
+        delay(600000);
+        system("gcc base.c -o base -lm");
+        printf("File base.c was already compiled. \n");
+        delay(600000);
+    }
+    else if (mode == 3){
+        printf("Compiling cube.c file... \n");
+        delay(600000);
+        system("gcc cube.c -o cube -lm");
+        printf("File cube.c was already compiled.");
+        delay(600000);
+        printf("Compiling base.c file... \n");
+        delay(600000);
+        system("gcc base.c -o base -lm");
+        printf("File base.c was already compiled. \n");
+        delay(600000);
+    }
+    else {
+        printf("This mode of compilation is not valid");
+    }
+    return 0;
+}
+
+int installer(){
+
+    int mode;
+
+    headerInterface();
+    printf("Zenith Cube Sat v.1.0 installer ... \n");
+    printf("Press: \n1 - to install CubeSat version;\n2 - to install Base version;\n3 - to install both;\n");
+    scanf("%d", &mode);
+    delay(1500000);
+    printf("Creating files... \n");
+    createZenithFiles();
+    printf("Compiling files... \n");
+    compileCodes(mode);
+    delay(1000000);
+    printf("zenith.h is already installed!");
+    delay(2000000);
 
     return 0;
 }
