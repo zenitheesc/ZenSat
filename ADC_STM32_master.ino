@@ -8,24 +8,21 @@
  *  ACTIONS
  *  0 = wait;
  *  1 = stabilize spin!
- *  2 = stabilize to an angle
- *  3 = send all K values
+ *  2 = stabilize to an angle (ex. [2; 120])
+ *  3 = receive and set new K values (ex. [3;0.2;1.9;3])
  *  4 = slow slew rate CW
  *  5 = slow slew rate CCW
  *  6 = medium slew rate CW
  *  7 = medium slew rate CCW
- *  8 = spin to an desidered speed CW (next int is the speed from 0 to 100%)
- *  9 = spin to an desideres speed CCW (next int is the speed from 0 to 100%)
+ *  8 = spin to an desidered speed CW (next int is the speed from 0 to 100%) (ex. [8;20])
+ *  9 = spin to an desideres speed CCW (next int is the speed from 0 to 100%) (ex. [9;45)
  *  10 = no change, keep running
  */
-
-
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 #include <PID_v1.h>
-
 
 int w = 0;
 int set_time = 10;
@@ -48,7 +45,14 @@ int slow_rate = 0;
 int medium_rate = 0;
 double Setpoint, Input, Output;
 String stringdata = "";
-
+int pos = 1;
+int distance = 0;
+int mode_int = 10;
+String  mode_1_pos = "";
+String  mode_2_pos = "";
+String  mode_3_pos = "";
+String  mode_4_pos = ""; 
+unsigned long previousMillis = 0;
 
 PID myPID(&Input, &Output, &Setpoint,0.2,1,0.1, DIRECT);
 
@@ -65,7 +69,6 @@ void setup(void)
     Serial.print("BNO falhou");
     while(1);
   }
-
   delay(1000);
   int8_t temp = bno.getTemp();
   Serial.print("Current Temperature: ");
@@ -75,7 +78,7 @@ void setup(void)
   bno.setExtCrystalUse(true);
   pinMode(Pin, OUTPUT);
   pinMode(Dir_Pin, OUTPUT);
-  start();
+  //start();
   imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
   w = -1*gyro.z();
   Input = w;
@@ -94,11 +97,63 @@ void loop(void)
   // - VECTOR_LINEARACCEL   - m/s^2
   // - VECTOR_GRAVITY       - m/s^2
   imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
-
+  imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+  wait();
 }
 
-void set_mode(int mode){
-  switch (mode){
+void slew_control(int slew_rate, int slew_direction){
+  unsigned long currentMillis = millis();
+  PID myPID(&Input, &Output, &Setpoint,0.2,1,0.1, DIRECT);
+  while (currentMillis - previousMillis <= 1000) {
+    imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+    Setpoint = slew_rate;
+    delay(300);
+    Input = gyro.z();
+    myPID.Compute();
+    vel = 255*request_encoder()/6000 + Output;
+    Serial.println(vel);
+    analogWrite(Pin, vel);
+  }
+  previousMillis = currentMillis;
+  send_status(1,1,1,1,1,1);
+  if (change_mode){
+    set_mode(mode_1_pos, mode_2_pos, mode_3_pos, mode_4_pos);
+  }
+}
+
+void go_to_angle(int target_angle){
+  unsigned long currentMillis = millis();
+  PID myPID(&Input, &Output, &Setpoint,0.2,1,0.1, DIRECT);
+  while (currentMillis - previousMillis <= 1000) {
+    imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+    Input = 360 - euler.x();
+    Setpoint = target_angle;
+    myPID.Compute();
+    vel = 255*request_encoder()/6000 + Output;
+    Serial.println(vel);
+    analogWrite(Pin, vel);
+  }
+  previousMillis = currentMillis;
+  send_status(1,1,1,1,1,1);
+  if (change_mode){
+    set_mode(mode_1_pos, mode_2_pos, mode_3_pos, mode_4_pos);
+  }
+  }
+
+bool change_mode(){
+  request_action();
+  bool cg_mode;
+  mode_int = mode_1_pos.toInt();
+  if (mode_int == 10){
+    cg_mode = false;
+  }else{
+    cg_mode = true;
+  }
+  return cg_mode;;
+}
+
+void set_mode(String mode, String pos2, String pos3,String pos4){
+  switch (mode.toInt()){
     case 0:
        wait();
        break;
@@ -106,7 +161,7 @@ void set_mode(int mode){
         slew_control(0, 0);
        break;
     case 2:
-        go_to_angle();
+        go_to_angle(pos2.toInt());
        break;
     case 3:
         send_k_values();
@@ -121,13 +176,13 @@ void set_mode(int mode){
        slew_control(medium_rate, 1);
        break;
      case 7:
-       slew_control(medium_rate, 1);
+       slew_control(medium_rate, 0);
        break;
      case 8:
-       direct_motor_speed(1,1);
+       direct_motor_speed(pos2.toFloat(),1);
        break;
      case 9:
-       direct_motor_speed(1,1);
+       direct_motor_speed(pos2.toFloat(),0);
      case 10:
        break;
      default:
@@ -136,23 +191,7 @@ void set_mode(int mode){
   }
 }
 
-
-void slew_control(int slew_rate, int slew_direction){
-  Setpoint = slew_rate;
-  imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
-  delay(300);
-  Input = gyro.z();
-  myPID.Compute();
-  vel = 255*read_speed/6000 + Output;
-  Serial.println(vel);
-  analogWrite(Pin, vel);
-}
-
-void go_to_angle(){
-}
-
 void send_k_values(){
-
 }
 
 void direct_motor_speed(int percentage, int speed_dir){
@@ -162,7 +201,9 @@ void direct_motor_speed(int percentage, int speed_dir){
 
 void wait(){
   delay(500);
-  set_mode(request_action());
+  if (change_mode()){
+    set_mode(mode_1_pos, mode_2_pos, mode_3_pos, mode_4_pos);
+  }
 }
 
 int request_encoder(){
@@ -174,10 +215,38 @@ int request_encoder(){
 }
 
 int request_action(){
-  Wire.requestFrom(9, 1);    
+  Wire.requestFrom(9, 1); 
+  pos = 1;  
+  mode_1_pos = "";
+  mode_2_pos = "";
+  mode_3_pos = "";
+  mode_4_pos = ""; 
   while (Wire.available()) { 
     int action = Wire.read(); 
-    return action; 
+    char c = Wire.read();
+    if (c == ';' && pos == 1){
+      pos = 2;
+    }
+    if (c == ';' && pos == 2){
+      pos = 3;
+    }
+    if (c == ';' && pos == 3){
+      pos = 4;
+    }
+    switch (pos){
+      case 1:
+        mode_1_pos.concat(c);
+        break;
+      case 2:
+        mode_2_pos.concat(c);
+        break;
+      case 3:
+        mode_3_pos.concat(c);
+        break;
+      case 4:
+        mode_4_pos.concat(c);
+        break;
+    } 
   } 
 }
 
