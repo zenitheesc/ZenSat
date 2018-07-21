@@ -12,6 +12,7 @@
 //Files manipulation functions
 
 int valueGetter(char *file_name, int *value){
+
     FILE *file;
 
     file = fopen(file_name, "r");
@@ -83,6 +84,8 @@ int readMessage(char *file_name, char *message, int position, int size, int chec
         return 0;
     }
 }
+
+
 
 
 //General purpose functions
@@ -164,6 +167,25 @@ int correctValue(int *values){
     }
 }
 
+void tenBlock(char *str){
+
+    int size;
+    int i = 0;
+
+    size = strlen(str);
+
+    if(size>=9){
+        str[9] = ';';
+        str[10] = '\0';
+    }
+    else if(size<9){
+        for(i = 0; i< size; i++){ str[8-i] = str[size - (i+1)]; }
+        for(i = 0; i< 9 - size; i++){ str[i] = '0'; }
+        str[9]=';';
+        str[10] = '\0';
+    }
+}
+
 int headerInterface(){
     system("clear");
     printf("=========================================================================\n");
@@ -172,59 +194,174 @@ int headerInterface(){
     return 0;
 }
 
+void getDate(char *time){
+    time[0] = '\0';
+    strcat(time,__DATE__);
+    strcat(time, " ");
+    strcat(time,__TIME__);
+}
+
+
+
 
 //Package manipulation functions
 
 int blockBuilder(char *block, int operating_mode, int whoami, int aux){
 
     int i = 0;
+    char cubesat[11]    = "ZenSatEESC";
+    char base[11]       = "BaseZenSat";
+    char zenith_eesc[3] = "ZE";
+    char time[TIME_SIZE];
 
     for (i=0;i<BLOCK_SIZE;i++){ block[i] = 0; }
 
     switch (operating_mode){
+        case 1 : { // Mission 1 - Simple telemetry service
+            if (whoami == 0) {
 
-        case 0 : {
-            if (whoami == 1){
-                block = (char*)"I'mStillAlive";
-            }
-            else { printf("whoami incorrect. \n"); }
-            break;
-        }
-        case 1 : { // Mission 1
-            if (whoami == 0){//Base code
-                block[0] = 'Z';
-                block[1] = 'e';
-                block[2] = 'n';
-                block[3] = 'S';
-                block[4] = 'a';
-                block[5] = 't';
-                block[6] = '\0';
-            }
-            else if (whoami == 1){//ZenSat code
+                char zeros[214];
+                char zero_aux[2] = "0";
 
+                getDate(time);
+
+                for (i=0;i<213;i++){zeros[i]= '0';}
+                zeros[213] = '\0';
+
+                strcat(block, base);
+                strcat(block, zeros);
+                strcat(block, time);
+                strcat(block,zenith_eesc);
+                block[BLOCK_SIZE-1] = '\0';
+
+                block[11] = aux;
             }
-            else{ printf("whoami incorrect. \n"); }
+            else if (whoami == 1){ //ZenSat block builder
+
+                int ps_block_number = 0;
+                int adc_block_number = 0;
+                char ps_data[81];
+                char adc_data[56];
+
+                valueGetter(PS_NUMBER, &ps_block_number);
+                readMessage(PS_FILE, ps_data, ps_block_number, PS_SIZE, 0);
+                valueGetter(ADC_RX_NUMBER, &adc_block_number);
+                readMessage(ADC_RX_FILE, adc_data, adc_block_number, ADC_SIZE, 0);
+                getDate(time);
+
+                strcat(block, cubesat);
+                strcat(block, ps_data);
+                strcat(block, adc_data);
+                strcat(block, time);
+                strcat(block, zenith_eesc);
+                block[BLOCK_SIZE-1] = '\0';
+            }
+            else { printf("Error - in 'blockBuilder', whoami passed is incorrect. \n"); }
             break;
         }
-        case 2 : {
+        case 2 : { //Mission 2 - Power supply checking
+            if (whoami == 0) {
+
+                char zeros[216];
+                char zero_aux[3] = "00";
+
+                getDate(time);
+
+                for (i=0;i<215;i++){zeros[i]= '0';}
+                zeros[215] = '\0';
+
+                strcat(block, base);
+                strcat(block, zeros);
+                strcat(block, time);
+                strcat(block,zenith_eesc);
+                block[BLOCK_SIZE] = '\0';
+
+                block[11] = aux;
+                block[12] = 10;
+            }
+            else if (whoami == 1){ //ZenSat block builder
+                char ps_data[161];
+                char zeros[56];
+                int i = 0;
+
+                for (i=0;i<55;i++){zeros[i]= '0';}
+                zeros[55] = '\0';
+
+                readMessage(PS_FILE, ps_data, aux, PS_SIZE, 0);
+                getDate(time);
+
+                strcat(block, cubesat);
+                strcat(block, ps_data);
+                strcat(block, zeros);
+                strcat(block, time);
+                strcat(block,zenith_eesc);
+                block[BLOCK_SIZE-1] = '\0';
+            }
+            else { printf("Error - in 'blockBuilder', whoami passed is incorrect. \n"); }
             break;
         }
-        case 3 : { break; }
-        case 4 : { break; }
-        case 5 : { break; }
-        case 6 : {
+        case 3 : { //Mission 3 - ADC stabilization
+            if (whoami == 0){}
+            else if (whoami == 1){}
+            else{ printf("Error - in 'blockBuilder', whoami passed is incorrect. \n"); }
+            break;
+        }
+        case 4 : { //Mission 4 - Horizon determination
+            if (whoami == 0){}
+            else if (whoami == 1){}
+            else{ printf("Error - in 'blockBuilder', whoami passed is incorrect. \n"); }
+            break;
+        }
+        case 5 : {
+            if (whoami == 0){}
+            else if (whoami == 1){}
+            else{ printf("Error - in 'blockBuilder', whoami passed is incorrect. \n"); }
+            break; //Mission 5 - Pointing
+        }
+        case 6 : { //Mission 6 - Send picture
+            //Mandar o tamanho da foto que é desejado
             readMessage(PICTURE_NAME, block, aux, BLOCK_SIZE, 0);
             break;
         }
-        case 7 : { break; }
-        case 8 : { break; }
+        case 7 : {
+            if (whoami == 0){}
+            else if (whoami == 1){}
+            else{ printf("Error - in 'blockBuilder', whoami passed is incorrect. \n"); }
+            break;
+        }
+        case 8 : { //Minimum telemetry service
+            if(whoami == 0){
+                for(i=0;i<BLOCK_SIZE-1;i++){
+                    block[i] = '0';
+                    block[BLOCK_SIZE-1] = '\0';
+                }
+            }
+            else if(whoami == 1){
+
+                char message[22] = "Telecommand received!";
+                char zeros[194];
+
+                getDate(time);
+                for (i=0;i<194;i++){zeros[i]= '0';}
+                zeros[194] = '\0';
+
+                strcat(block, cubesat);
+                strcat(block, message);
+                strcat(block, zeros);
+                strcat(block, time);
+                strcat(block, zenith_eesc);
+                block[BLOCK_SIZE-1] = '\0';
+            }
+            else{ printf("Error - in 'blockBuilder', whoami passed is incorrect. \n"); }
+            break;
+        }
         case 9 : { //Mission failed once or twice
             break;
         }
         case 10 : { //Mission failed three times
             break;
         }
-        default:{ return 0; }
+        default: { return 0; }
     }
     return 1;
 }
@@ -336,7 +473,7 @@ int packageAnalyzer(){
     operating_mode_rec[2] = message[253];
 
     aux = correctValue(operating_mode_rec);
-    if (aux >= 0 && aux <= 8){
+    if (aux >= 0 && aux <= 9){
         operating_mode_system = aux;
         valueSetter(MODE_FILE, operating_mode_system);
         aux = correctValue(pack_num_received);
@@ -383,6 +520,8 @@ int packageAnalyzer(){
 }
 
 
+
+
 //Initialize and check functions
 
 int createBackup(){
@@ -398,14 +537,16 @@ int createBackup(){
     system("cp " TC_CYCLE        " "  TC_CYCLE_CP        );
     system("cp " MISSED_PACKAGES " "  MISSED_PACKAGES_CP );
     system("cp " MODE_FILE       " "  MODE_FILE_CP       );
-    system("cp " HEALTH_FILE     " "  HEALTH_FILE_CP     );
-    system("cp " HEALTH_NUMBER   " "  HEALTH_NUMBER_CP   );
     system("cp " PS_FILE         " "  PS_FILE_CP         );
     system("cp " PS_NUMBER       " "  PS_NUMBER_CP       );
-    system("cp " ADC_FILE        " "  ADC_FILE_CP        );
-    system("cp " ADC_NUMBER      " "  ADC_NUMBER_CP      );
-    system("cp " CV_FILE         " "  CV_FILE_CP         );
-    system("cp " CV_NUMBER       " "  CV_NUMBER_CP       );
+    system("cp " ADC_TX_FILE     " "  ADC_TX_FILE_CP     );
+    system("cp " ADC_RX_NUMBER   " "  ADC_TX_NUMBER_CP   );
+    system("cp " ADC_RX_FILE     " "  ADC_RX_FILE_CP     );
+    system("cp " ADC_RX_NUMBER   " "  ADC_RX_NUMBER_CP   );
+    system("cp " FILE_SLAVE      " "  FILE_SLAVE_CP      );
+    system("cp " FILE_MASTER     " "  FILE_MASTER_CP     );
+    system("cp " STD_LOOP        " "  STD_LOOP_CP        );
+    system("cp " PS_AUX          " "  PS_AUX_CP          );
 
     return 0;
 }
@@ -423,14 +564,16 @@ int recoveryFiles(){
     system("cp " TC_CYCLE_CP        " "  TC_CYCLE        );
     system("cp " MISSED_PACKAGES_CP " "  MISSED_PACKAGES );
     system("cp " MODE_FILE_CP       " "  MODE_FILE       );
-    system("cp " HEALTH_FILE_CP     " "  HEALTH_FILE     );
-    system("cp " HEALTH_NUMBER_CP   " "  HEALTH_NUMBER   );
     system("cp " PS_FILE_CP         " "  PS_FILE         );
     system("cp " PS_NUMBER_CP       " "  PS_NUMBER       );
-    system("cp " ADC_FILE_CP        " "  ADC_FILE        );
-    system("cp " ADC_NUMBER_CP      " "  ADC_NUMBER      );
-    system("cp " CV_FILE_CP         " "  CV_FILE         );
-    system("cp " CV_NUMBER_CP       " "  CV_NUMBER       );
+    system("cp " ADC_TX_FILE_CP     " "  ADC_TX_FILE     );
+    system("cp " ADC_RX_NUMBER_CP   " "  ADC_TX_NUMBER   );
+    system("cp " ADC_RX_FILE_CP     " "  ADC_RX_FILE     );
+    system("cp " ADC_RX_NUMBER_CP   " "  ADC_RX_NUMBER   );
+    system("cp " FILE_SLAVE_CP      " "  FILE_SLAVE      );
+    system("cp " FILE_MASTER_CP     " "  FILE_MASTER     );
+    system("cp " STD_LOOP_CP        " "  STD_LOOP        );
+    system("cp " PS_AUX_CP          " "  PS_AUX          );
 
     return 0;
 }
@@ -441,16 +584,19 @@ int initializingCubeSat(int check){
     if(check == 0){
         printf("CubeSat is initilizing for the first time... \n");
 
-        valueSetter(CHECK_POWERED  , 1);
-        valueSetter(TM_NUMBER      , 0);
-        valueSetter(TM_CYCLE       , 0);
-        valueSetter(TC_NUMBER      , 0);
-        valueSetter(TC_CYCLE       , 0);
-        valueSetter(MISSED_PACKAGES, 0);
-        valueSetter(HEALTH_NUMBER  , 0);
-        valueSetter(PS_NUMBER      , 0);
-        valueSetter(ADC_NUMBER     , 0);
-        valueSetter(CV_NUMBER      , 0);
+        valueSetter(CHECK_POWERED  ,  1);
+        valueSetter(MODE_FILE      ,  0);
+        valueSetter(TM_NUMBER      ,  0);
+        valueSetter(TM_CYCLE       ,  0);
+        valueSetter(TC_NUMBER      ,  0);
+        valueSetter(TC_CYCLE       ,  0);
+        valueSetter(MISSED_PACKAGES,  0);
+        valueSetter(PS_NUMBER      ,  0);
+        valueSetter(ADC_TX_NUMBER  ,  0);
+        valueSetter(ADC_RX_NUMBER  ,  0);
+        valueSetter(STD_LOOP,      , 20);
+        createBackup();
+
     }
     else if (check == 1){
         printf("CubeSat is not initializing for the first time...\n");
@@ -459,6 +605,7 @@ int initializingCubeSat(int check){
         recoveryFiles();
         printf("Recovering system...\n");
         delay(3000000);
+        createBackup();
         printf("System recovered.\n");
     }
     else{
@@ -466,15 +613,19 @@ int initializingCubeSat(int check){
         delay(2000000);
         return 0;
     }
+    //Implementar inicialização da outra rasp
+
     return 1;
 }
+
+
 
 
 //Communication functions
 
 /*
 
-int write_i2c(char *file_name, int packet, int qt, int addr,int chan){
+int write_i2c(char *file_name, int packet, int qt, int addr, int chan){
 
     FILE *file;
     int i;
@@ -540,7 +691,7 @@ int write_i2c(char *file_name, int packet, int qt, int addr,int chan){
     return 1;
 }
 
-int read_i2c(char *file_name, int position, int addr,int chan){
+int read_i2c(char *file_name, int position, int addr, int chan){
 
     FILE *file;
     int i = 0;
@@ -628,43 +779,83 @@ int sendSimpleMessage(char *block, int op_mode, int whoami, int aux){
     blockBuilder(block, op_mode, whoami, aux);
     packageCreator(TM_NUMBER, TM_CYCLE, block, pack);
     writeMessage(NEW_TM, pack, 0, PACK_SIZE, 0);
-    //check = write_i2c(NEW_TM, 0, 1, adr, chanel);
-    if (check == 1){
-        return 1;
-    }
-    else{
-        return 0;
-    }
+    if(whoami == 0){check = write_i2c(NEW_TM, 0, 1, ADD_I2C_ATMEGA_BASE, 1);}
+    else if (whoami == 1){check = write_i2c(NEW_TM, 0, 1, ADD_I2C_ATMEGA, 1);}
+    else { return 0; }
+    return check;
+}
+
+int powerSupplyMaster(){
+
+    char ps_block[161];
+    char aux1 [11];
+    int i;
+
+    values[0] = '/0';
+
+    //LEITURA INAS RASP MASTER E ESCRITA ARQUIVO PS_FILE
+    system("python ina.py");
+    //AQUI É LIDO A PRIMEIRA PARTE DO QUE SERA ENVIADO SOBRE O PS
+
+    //ENVIA CARACTERE VIA UART PARA RASP SLAVE PARA LEITURA INAS RASP SLAVE
+    tx_uart('a');
+
+    //LEITURA VIA UART DADOS INA RASP SLAVE
+    rx_uart(aux1); //MUDAR TAMANHO DO VETOR
+    //AQUI É LIDO A SEGUNDA PARTE DO QUE SERA ENVIADO SOBRE O PS
+
+    //ESCREVER NO ARQUIVO OS VALORES RESTANTES, REFERENTES A SEGUNDA PARTE DA INFO
+
+    readMessage(PS_AUX, ps_block, 0, PS_SIZE, 0);
+
+    valueGetter(PS_NUMBER, &i);
+    writeMessage(PS_FILE, ps_block, i+1, PS_SIZE, 0);
+    valueSetter(PS_NUMBER, i+1);
+
+    return 0;
+}
+
+int powerSupplySlave(){
+
+    return 0;
+}
+
+int ADC(){
+    return 0;
 }
 
 
-//CubeSat missions functions
+
+
+//CubeSatMaster missions functions
 
 int standardState(){
 
-    int loop_control;
+    int loop_control = 0;
     int check_received;
     int check_package;
     int counter = 0;
+    int std_loop;
     char block[BLOCK_SIZE];
 
     system("clear");
     printf("Operating mode 0 - Standard mode\n");
+    valueGetter(STD_LOOP, &std_loop);
     while (loop_control == 0) {
-        delay(2000000);
+        delay(1000000);
         printf("Checking microcontroller for new commands - Attempt: %d; \n", counter + 1);
-        //temp = read_i2c(NEW_TC); //PASSAR ARGS
+        check_received = read_i2c(NEW_TC, 0, ADD_I2C_ATMEGA, 1);
+
         if (check_received == 1) {
             printf("Message received!\n");
             printf("Analyzing message and setting the system...\n");
             check_package = packageAnalyzer();
             if (check_package == 1){
                 printf("System seted. \nInitializing new actions.\n");
-                delay(800000);
                 loop_control = 1;
             }
             else{
-                printf("Waiting for new packages...\n");
+                printf("Package corrupted. Waiting for new packages...\n");
                 counter = 0;
                 delay(1000000);
                 system("clear");
@@ -673,8 +864,9 @@ int standardState(){
         }
         else if (check_received == 0) {
             counter++;
-            if (counter == 15) {
+            if (counter == std_loop) {
                 counter = 0;
+                //REQUISITAR ATUALIZAÇÂO DOS ARQUIVOS DE SISTEMA (ADC E PS)
                 sendSimpleMessage(block, 0, 1, 0);
                 system("clear");
                 printf("Operating mode 0 - Standard mode\n");
@@ -690,6 +882,11 @@ int healthInfo(){
     char block[BLOCK_SIZE];
     char package[PACK_SIZE];
     int check;
+    int cycles;
+
+    readMessage(NEW_TC, package, 0, PACK_SIZE, 0);
+    cycles = package[13];
+    valueSetter(STD_LOOP, cycles);
 
     system("clear");
     printf("Operating mode 1 - Sending a simple message about Cubesat Health\n");
@@ -717,18 +914,21 @@ int powerSupplyCheck(){
 
     int block_position;
     char block[BLOCK_SIZE];
-    int check = 0;
+    int check;
 
     system("clear");
     printf("Operating mode 2 - Checking current and voltage\n");
     printf("Requiring Power Supply System informations ...\n");
     //REQUERER INFORMAÇÕES DO PS, ESTAS DEVEM SER SALVAS EM SEUS RESPECTIVOS ARQUIVOS
     //MOSTRAR EM TELA ESSAS INFORMAÇÕES (para checagem de sistema, depois deve ser comentado)
+    powerSupplySimulator();
 
 
     printf("Building and sending the package...\n");
-    valueGetter(PS_NUM, &block_position);
+    valueGetter(PS_NUMBER, &block_position);
     check = sendSimpleMessage(block, 2, 1, block_position);
+
+    delay(7000);
 
     if (check == 1){
         printf("Package sended.\n Mission 2 - completed.");
@@ -744,11 +944,12 @@ int oneAxisStabilization(){
 
     int block_position;
     char block[BLOCK_SIZE];
+    int check;
 
     system("clear");
     printf("Operating mode 3 - ZenSat stabilization\n");
     printf("Activating reaction wheel stabilization mode...\n");
-    //ATIVAR MODO DE ESTABILIZAÇÃO
+    //ATIVAR MODO DE ESTABILIZAÇÃO - MANDAR COMANDO PARA O STM
     //ESPERAR FINALIZAÇÃO (o stm deverá manter-se ativado para que o cubesat continue estabilizado)
     printf("ZenSat stabilized!\n");
     printf("Requiring ADC System informations...\n");
@@ -756,7 +957,7 @@ int oneAxisStabilization(){
     //MOSTRAR EM TELA ESSAS INFORMAÇÕES (para checagem de sistema, depois deve ser comentado)
 
     printf("Building and sending the package...\n");
-    valueGetter(ADC_NUM, &block_position);
+    //valueGetter(ADC_NUM, &block_position);
     check = sendSimpleMessage(block, 3, 1, block_position );
     //ESSE PROVAVELMENTE N SERA O CHECK QUE DIRA SE A MISSÃO FOI CONCLUÍDA OU NÃO
     if (check==1){
@@ -777,9 +978,16 @@ int pointing(){
     return 0;
 }
 
-int livefeed(int mode){
+int livefeed(){
     return 0;
 }
+
+int temperatureMonitor(){
+
+    return 0;
+}
+
+
 
 
 //Base interface functions
@@ -791,7 +999,7 @@ int interfaceOperator(){
     headerInterface();
     printf(" Options:\n");
     printf("   1. Change operating mode;\n");
-    printf("   2. Verifies the current state of ZenSat;\n");
+    printf("   2. Verifies the current state of ZenSat (sleep mode);\n");
     printf("   3. Read packages received;\n");
     printf("   4. Read packages sended;\n");
     printf("   5. Change to master operating mode;\n");
@@ -811,6 +1019,9 @@ int displayData(char *package){ ;
     int pack_num_received[3]  = {0,0,0};
     int pack_cycle_received   = 0;
     int operating_mode_rec[3] = {0,0,0};
+    char aux[11];
+    char zensat[11];
+    char time[21];
 
 
     pack_num_received[0]  =  package[0];
@@ -825,16 +1036,125 @@ int displayData(char *package){ ;
     op_mode     =  correctValue(operating_mode_rec);
 
     headerInterface();
-    printf(" Pack number: &d;  Pack cycle: %d;");
+    printf("Pack number: &d;  Pack cycle: %d;  Operating mode: %d;\n", pack_number, pack_cycle, op_mode);
 
     switch (op_mode){
-        case 1:{ break;}
-        case 2:{ break;}
+        case 1:{
+            float ina_values[8][2];
+            float euler_angles[3];
+            float wheel_rpm;
+            float cubesat_omega;
+            float temperature;
+            int i = 0;
+
+            /* ************************************** Converting data ************************************** */
+            //NAME
+            for(i =  3;i < 13;i++){ zensat[i - 3] = package[i];} zensat[11] = '\0';
+            //INA DATA
+            for(i = 13;i < 23;i++){ aux[i - 15] = package[i];} aux[11] = '\0'; ina_values[0][0] = atof(aux);
+            for(i = 23;i < 33;i++){ aux[i - 23] = package[i];} aux[11] = '\0'; ina_values[0][1] = atof(aux);
+            for(i = 33;i < 43;i++){ aux[i - 33] = package[i];} aux[11] = '\0'; ina_values[1][0] = atof(aux);
+            for(i = 43;i < 53;i++){ aux[i - 43] = package[i];} aux[11] = '\0'; ina_values[1][1] = atof(aux);
+            for(i = 53;i < 63;i++){ aux[i - 53] = package[i];} aux[11] = '\0'; ina_values[2][0] = atof(aux);
+            for(i = 63;i < 73;i++){ aux[i - 63] = package[i];} aux[11] = '\0'; ina_values[2][1] = atof(aux);
+            for(i = 73;i < 83;i++){ aux[i - 73] = package[i];} aux[11] = '\0'; ina_values[3][0] = atof(aux);
+            for(i = 83;i < 93;i++){ aux[i - 83] = package[i];} aux[11] = '\0'; ina_values[3][1] = atof(aux);
+            for(i = 93;i <103;i++){ aux[i - 93] = package[i];} aux[11] = '\0'; ina_values[4][0] = atof(aux);
+            for(i =103;i <113;i++){ aux[i -103] = package[i];} aux[11] = '\0'; ina_values[4][1] = atof(aux);
+            for(i =113;i <123;i++){ aux[i -113] = package[i];} aux[11] = '\0'; ina_values[5][0] = atof(aux);
+            for(i =125;i <135;i++){ aux[i -125] = package[i];} aux[11] = '\0'; ina_values[5][1] = atof(aux);
+            for(i =135;i <145;i++){ aux[i -135] = package[i];} aux[11] = '\0'; ina_values[6][0] = atof(aux);
+            for(i =145;i <155;i++){ aux[i -145] = package[i];} aux[11] = '\0'; ina_values[6][1] = atof(aux);
+            for(i =155;i <165;i++){ aux[i -155] = package[i];} aux[11] = '\0'; ina_values[7][0] = atof(aux);
+            for(i =165;i <175;i++){ aux[i -165] = package[i];} aux[11] = '\0'; ina_values[7][1] = atof(aux);
+            //ADC DATA
+            for(i =175;i <185;i++){ aux[i -175] = package[i];} aux[11] = '\0'; euler_angles[0] = atof(aux);
+            for(i =185;i <195;i++){ aux[i -185] = package[i];} aux[11] = '\0'; euler_angles[1] = atof(aux);
+            for(i =195;i <205;i++){ aux[i -195] = package[i];} aux[11] = '\0'; euler_angles[2] = atof(aux);
+            for(i =205;i <215;i++){ aux[i -205] = package[i];} aux[11] = '\0'; wheel_rpm       = atof(aux);
+            for(i =215;i <225;i++){ aux[i -215] = package[i];} aux[11] = '\0'; cubesat_omega   = atof(aux);
+            for(i =225;i <230;i++){ aux[i -225] = package[i];} aux[11] = '\0'; temperature     = atof(aux);
+            //TIME
+            for(i =230;i <250;i++){ time[i -230] = package[i];} time[21] = '\0';
+
+
+            /* ************************************** Printing on screen ************************************** */
+            printf("Battery        -   Tension : %8.3f V   -   Current : %8.3f mA   \n", ina_values[0][0], ina_values[0][1]);
+            printf("Regulator 5v   -   Tension : %8.3f V   -   Current : %8.3f mA   \n", ina_values[1][0], ina_values[1][1]);
+            printf("Regulator 3v3  -   Tension : %8.3f V   -   Current : %8.3f mA   \n", ina_values[2][0], ina_values[2][1]);
+            printf("Charger        -   Tension : %8.3f V   -   Current : %8.3f mA   \n", ina_values[3][0], ina_values[3][1]);
+            printf("Panel 1        -   Tension : %8.3f V   -   Current : %8.3f mA   \n", ina_values[4][0], ina_values[4][1]);
+            printf("Panel 2        -   Tension : %8.3f V   -   Current : %8.3f mA   \n", ina_values[5][0], ina_values[5][1]);
+            printf("Panel 3        -   Tension : %8.3f V   -   Current : %8.3f mA   \n", ina_values[6][0], ina_values[6][1]);
+            printf("Panel 4        -   Tension : %8.3f V   -   Current : %8.3f mA   \n", ina_values[7][0], ina_values[7][1]);
+            printf("Euler's angles -   Roll : %8.3f;  Pitch : %8.3f;  Yaw : %8.3f;\n", euler_angles[0], euler_angles[1], euler_angles[2]);
+            printf("Wheel RPM: %8.3f   -   ZenSat Angular Velocity: %8.3f\n");
+            printf("%s   -   time when sended: %s\n", zensat, time );
+
+            break;
+        }
+        case 2:{
+
+            float ina_values[8][2];
+            int current_pack;
+            int packs_expected;
+            int i = 0;
+
+            /* ************************************** Converting data ************************************** */
+            //NAME
+            for(i =  3;i < 13;i++){ zensat[i - 3] = package[i];} zensat[11] = '\0';
+            //INA DATA
+            for(i = 13;i < 23;i++){ aux[i - 15] = package[i];} aux[11] = '\0'; ina_values[0][0] = atof(aux);
+            for(i = 23;i < 33;i++){ aux[i - 23] = package[i];} aux[11] = '\0'; ina_values[0][1] = atof(aux);
+            for(i = 33;i < 43;i++){ aux[i - 33] = package[i];} aux[11] = '\0'; ina_values[1][0] = atof(aux);
+            for(i = 43;i < 53;i++){ aux[i - 43] = package[i];} aux[11] = '\0'; ina_values[1][1] = atof(aux);
+            for(i = 53;i < 63;i++){ aux[i - 53] = package[i];} aux[11] = '\0'; ina_values[2][0] = atof(aux);
+            for(i = 63;i < 73;i++){ aux[i - 63] = package[i];} aux[11] = '\0'; ina_values[2][1] = atof(aux);
+            for(i = 73;i < 83;i++){ aux[i - 73] = package[i];} aux[11] = '\0'; ina_values[3][0] = atof(aux);
+            for(i = 83;i < 93;i++){ aux[i - 83] = package[i];} aux[11] = '\0'; ina_values[3][1] = atof(aux);
+            for(i = 93;i <103;i++){ aux[i - 93] = package[i];} aux[11] = '\0'; ina_values[4][0] = atof(aux);
+            for(i =103;i <113;i++){ aux[i -103] = package[i];} aux[11] = '\0'; ina_values[4][1] = atof(aux);
+            for(i =113;i <123;i++){ aux[i -113] = package[i];} aux[11] = '\0'; ina_values[5][0] = atof(aux);
+            for(i =125;i <135;i++){ aux[i -125] = package[i];} aux[11] = '\0'; ina_values[5][1] = atof(aux);
+            for(i =135;i <145;i++){ aux[i -135] = package[i];} aux[11] = '\0'; ina_values[6][0] = atof(aux);
+            for(i =145;i <155;i++){ aux[i -145] = package[i];} aux[11] = '\0'; ina_values[6][1] = atof(aux);
+            for(i =155;i <165;i++){ aux[i -155] = package[i];} aux[11] = '\0'; ina_values[7][0] = atof(aux);
+            for(i =165;i <175;i++){ aux[i -165] = package[i];} aux[11] = '\0'; ina_values[7][1] = atof(aux);
+            //MISSION PACKS INFO
+            for(i =175;i <180;i++){ aux[i -175] = package[i];} aux[6] = '\0'; current_pack   = (int)atof(aux);
+            for(i =180;i <185;i++){ aux[i -180] = package[i];} aux[6] = '\0'; packs_expected = (int)atof(aux);
+            //TIME
+            for(i =230;i <250;i++){ time[i -230] = package[i];} time[21] = '\0';
+
+
+            /* ************************************** Printing on screen ************************************** */
+            printf("Battery        -   Tension : %8.3f V  -  Current : %8.3f mA   \n", ina_values[0][0], ina_values[0][1]);
+            printf("Regulator 5v   -   Tension : %8.3f V  -  Current : %8.3f mA   \n", ina_values[1][0], ina_values[1][1]);
+            printf("Regulator 3v3  -   Tension : %8.3f V  -  Current : %8.3f mA   \n", ina_values[2][0], ina_values[2][1]);
+            printf("Charger        -   Tension : %8.3f V  -  Current : %8.3f mA   \n", ina_values[3][0], ina_values[3][1]);
+            printf("Panel 1        -   Tension : %8.3f V  -  Current : %8.3f mA   \n", ina_values[4][0], ina_values[4][1]);
+            printf("Panel 2        -   Tension : %8.3f V  -  Current : %8.3f mA   \n", ina_values[5][0], ina_values[5][1]);
+            printf("Panel 3        -   Tension : %8.3f V  -  Current : %8.3f mA   \n", ina_values[6][0], ina_values[6][1]);
+            printf("Panel 4        -   Tension : %8.3f V  -  Current : %8.3f mA   \n", ina_values[7][0], ina_values[7][1]);
+            printf("\nNumber of package in mission: %d/%d\n", current_pack, packs_expected);
+            printf("\n%s   -   time when sended: %s\n", zensat, time );
+
+            break;
+        }
         case 3:{ break;}
         case 4:{ break;}
         case 5:{ break;}
         case 6:{ break;}
         case 7:{ break;}
+        case 8:{
+
+            int i = 0;
+            char aux1[22];
+
+            for(i=0;i<22;i++){ aux1[i] = package[i+3];}
+            printf("%s\n", aux1);
+            break;
+        }
     }
 
     return 0;
@@ -844,6 +1164,10 @@ int changeOperatingMode(){
 
     char package [PACK_SIZE];
     char block [BLOCK_SIZE];
+    char package_text[21] = "BaseMessage-ZenSatV1";
+    int check;
+    int aux = 0;
+    int i;
     int op = 0;
 
     //User information
@@ -856,54 +1180,90 @@ int changeOperatingMode(){
     printf("\n     5. ZenSat pointing;");
     printf("\n     6. Livefeed;");
     printf("\n     7. Temperature monitor;");
+    printf("\n     8. Minimum communication test;");
     printf("\n\n\n\n Your option: ");
     scanf("%d", &op);
+    delay(200000);
 
     switch (op) {
-        case 1: {
+        case 1: { //Mode 1 - Simple telemetry service
 
-            sendSimpleMessage(block,op,0,0);
-            readMessage(NEW_TM, package, 0, PACK_SIZE, 0);
-            printf("\n\n\n%s", package);
-            //displayData(package);
-            //CRIAR PACOTE DE MUDANÇA DE MODE COM INFO NECESSÁRIA
+            int cycles_number;
+
+            headerInterface();
+            printf("Change delay of standard mode? (How many cycles before send a package?) \n");
+            scanf ("%d", &cycles_number);
+            sendSimpleMessage(block,op,0,cycles_number);
+
             //ESPERAR POR PACOTE DE INFO
             //PRINTAR INFO
             //displayData(package);
             break;
         }
-        case 2: {
+        case 2: { //Mode 2 - Power supply check
+
+            int counter = 0;
+
+            headerInterface();
+            printf(" How many measurements are needed? ");
+            scanf ("%d", &aux);
+            printf("\nBuilding and sending command package...\n");
+            sendSimpleMessage(block,op,0,aux);
+            printf("Command package sended.\n");
+            i = 0;
+
+            while(i<aux){
+                //check = read_i2c();
+                if (check == 0){
+                    counter ++;
+                    if(counter == 15){
+                        headerInterface();
+                        printf("ZenSat don't respond.\nSystem failed.\n");
+                        delay(5000000);
+                        i = aux;
+                    }
+                }
+                else if(check == 1){
+                    counter = 0;
+                    i++;
+                    displayData(package);
+                }
+                else {
+                    printf("Error - problem in communication with Atmega and LoRa.\n");
+                }
+                delay(1000000);
+            }
             //CRIAR PACOTE DE MUDANÇA DE MODE COM INFO NECESSÁRIA
             //ESPERAR POR PACOTE DE INFO
             //PRINTAR INFO
             displayData(package);
             break;
         }
-        case 3: {
+        case 3: { //Mode 3 - Stabilization
             //CRIAR PACOTE DE MUDANÇA DE MODE COM INFO NECESSÁRIA
             //ESPERAR DE CHECAGEM E FINALIZAÇÃO
             //OU MANDAR PACOTE DE FINALIZAÇÃO?
             displayData(package);
             break;
         }
-        case 4: {
+        case 4: { //Mode 4 - Horizon determination
             //CRIAR PACOTE DE MUDANÇA DE MODE COM INFO NECESSÁRIA
             //ESPERAR POR PACOTE DE INFO
             //PRINTAR INFO
             displayData(package);
             break;
         }
-        case 5: {
+        case 5: { //Mode 5 - Pointing
             //CRIAR PACOTE DE MUDANÇA DE MODE COM INFO NECESSÁRIA
             //ESPERAR POR PACOTE DE INFO
             //PRINTAR INFO E CHECAGEM DE APONTAMENTO
             displayData(package);
             break;
         }
-        case 6: {
+        case 6: { //Mode 6 - Livefeed
             //CRIAR PACOTE DE MUDANÇA DE MODE COM INFO NECESSÁRIA
             //ESPERAR POR PACOTE DE INFO
-            displayData(package);
+            //displayData(package);
             //RECEBER FOTO
             //REMONTA-LA
             //EXIBIR FOTO
@@ -914,6 +1274,35 @@ int changeOperatingMode(){
             displayData(package);
             //MANDAR PACOTE DE FINALIZAÇÃO
             break;
+        }
+        case 8: {
+
+            headerInterface();
+            printf("Sending minimum message...\n");
+            sendSimpleMessage(block, 8, 0, 0);
+            aux = 1;
+
+            while(aux){
+                check = read_i2c(NEW_TC, 0, ADD_I2C_ATMEGA_BASE, 1);
+                if (check == 0){
+                    counter ++;
+                    if(counter == 15){
+                        headerInterface();
+                        printf("ZenSat don't respond.\nSystem failed.\n");
+                        delay(5000000);
+                        aux = 0;
+                    }
+                }
+                else if(check == 1){
+                    counter = 0;
+                    aux = 0;
+                    displayData(package);
+                }
+                else {
+                    printf("Error - problem in communication with Atmega and LoRa.\n");
+                }
+                delay(1000000);
+            }
         }
         default: {
             printf("Invalid entry!");
@@ -928,6 +1317,7 @@ int checkZenSatState(){
     int cycles = 0;
     while(cycles < 3){
         delay(2000000);
+        scanf("%d",&cycles);
         /*
          received = read_i2c();
          if(received_i2c == 1){ DEU BOM PRINTA}
@@ -949,13 +1339,13 @@ int readPackages(int mode){
 
     headerInterface();
     printf("Mode: %d\n", mode);
-    printf("Put the number of the package that you want to read: ");
+    printf("Type the number of the package that you want to read: ");
     scanf("%d", &pack_num);
     if (mode == 0)     { readMessage(TC_FILE, package, pack_num, PACK_SIZE, 0);}
     else if (mode == 1){ readMessage(TM_FILE, package, pack_num, PACK_SIZE, 0);}
-    else { printf("\nInvalid mode"); return 0; }
+    else { printf("\nInvalid mode\n"); return 0; }
 
-    //displayData(package);
+    displayData(package);
 
     return 1;
 }
@@ -1009,9 +1399,15 @@ int shutdownZenSat(){
 }
 
 
+
+
 //Main functions
 
-int CubeSat(){
+int CubeSatSlave(){
+    return 0;
+}
+
+int CubeSatMaster(){
 
     /* *****************  Variable declarations  ***************** */
 
@@ -1050,7 +1446,6 @@ int CubeSat(){
                 }
                 else{
                     mission_counter ++;
-                    sendSimpleMessage(block, 9, 1, operating_mode);
                     if (mission_counter == 3){
                         mission_counter = 0;
                         sendSimpleMessage(block, 10, 1, operating_mode);
@@ -1067,52 +1462,119 @@ int CubeSat(){
                 }
                 else{
                     mission_counter ++;
-                    sendSimpleMessage(block, 9, 1, operating_mode);
                     if (mission_counter == 3){
                         mission_counter = 0;
                         sendSimpleMessage(block, 10, 1, operating_mode);
+                        operating_mode = 0;
+                        valueSetter(MODE_FILE, operating_mode);
                     }
-                }break;
+                }
+                break;
             }
             case 3: { //ADC stabilization
+                mission_check = oneAxisStabilization();
+                if (mission_check == 1){
+                    mission_counter = 0;
+                    operating_mode = 0;
+                    valueSetter(MODE_FILE, operating_mode);
+                }
+                else{
+                    mission_counter ++;
+                    if (mission_counter == 3){
+                        mission_counter = 0;
+                        sendSimpleMessage(block, 10, 1, operating_mode);
+                        operating_mode = 0;
+                        valueSetter(MODE_FILE, operating_mode);
+                    }
+                }
                 break;
             }
             case 4: { //Horizon determination
-                system("clear");
-                printf("Operating mode 4 - Horizon determination");
-
-                valueSetter(MODE_FILE, 0);
-                valueGetter(MODE_FILE, &operating_mode);
+                mission_check = horizonDetermination();
+                if (mission_check == 1){
+                    mission_counter = 0;
+                    operating_mode = 0;
+                    valueSetter(MODE_FILE, operating_mode);
+                }
+                else{
+                    mission_counter ++;
+                    if (mission_counter == 3){
+                        mission_counter = 0;
+                        sendSimpleMessage(block, 10, 1, operating_mode);
+                        operating_mode = 0;
+                        valueSetter(MODE_FILE, operating_mode);
+                    }
+                }
                 break;
             }
             case 5: { //ADC pointing
-                system("clear");
-                printf("Operating mode 5 - Pointing");
-
-                valueSetter(MODE_FILE, 0);
-                valueGetter(MODE_FILE, &operating_mode);
+                mission_check = pointing();
+                if (mission_check == 1){
+                    mission_counter = 0;
+                    operating_mode = 0;
+                    valueSetter(MODE_FILE, operating_mode);
+                }
+                else{
+                    mission_counter ++;
+                    if (mission_counter == 3){
+                        mission_counter = 0;
+                        sendSimpleMessage(block, 10, 1, operating_mode);
+                        operating_mode = 0;
+                        valueSetter(MODE_FILE, operating_mode);
+                    }
+                }
                 break;
             }
             case 6: { //Live feed
-                system("clear");
-                printf("Operating mode 6 - Sending a picture");
-
-                valueSetter(MODE_FILE, 0);
-                valueGetter(MODE_FILE, &operating_mode);
+                mission_check = livefeed(1);
+                if (mission_check == 1){
+                    mission_counter = 0;
+                    operating_mode = 0;
+                    valueSetter(MODE_FILE, operating_mode);
+                }
+                else{
+                    mission_counter ++;
+                    if (mission_counter == 3){
+                        mission_counter = 0;
+                        sendSimpleMessage(block, 10, 1, operating_mode);
+                        operating_mode = 0;
+                        valueSetter(MODE_FILE, operating_mode);
+                    }
+                }
                 break;
             }
             case 7: {
+                mission_check = temperatureMonitor();
+                if (mission_check == 1){
+                    mission_counter = 0;
+                    operating_mode = 0;
+                    valueSetter(MODE_FILE, operating_mode);
+                }
+                else{
+                    mission_counter ++;
+                    if (mission_counter == 3){
+                        mission_counter = 0;
+                        sendSimpleMessage(block, 10, 1, operating_mode);
+                        operating_mode = 0;
+                        valueSetter(MODE_FILE, operating_mode);
+                    }
+                }
+                break;
+            }
+            case 8:{
                 system("clear");
-                printf("Operating mode 7 - Checking ZenSat temperature");
-
-                valueSetter(MODE_FILE, 0);
-                valueGetter(MODE_FILE, &operating_mode);
+                printf("Minimum telemetry service\n");
+                printf("Building and send the package...\n");
+                sendSimpleMessage(block, 8, 1, 0);
+                printf("Package sended.\n");
+                operating_mode = 0;
+                valueSetter(MODE_FILE, operating_mode);
                 break;
             }
             case 9: {
                 system("clear");
-                printf("Operating mode 9 - Shutdown");
-                main_loop_control = 1;
+                printf("Operating mode 9 - Shutdown\n");
+                return 1;
             }
             default: {
                 valueSetter(MODE_FILE, 0);
@@ -1122,6 +1584,7 @@ int CubeSat(){
         }
         createBackup();
     }
+    return 0;
 }
 
 int Base(){
@@ -1148,7 +1611,43 @@ int Base(){
 }
 
 
+
+
 //Test function
+
+int powerSupplySimulator(){
+
+    float ina_values[8][2];
+    char aux1 [11];
+    char values [PS_SIZE];
+    int i;
+
+    values[0] = '/0';
+
+    //GETTING DATA FROM INAS - ORLANDIN IMPLEMENTA ASSIM MEU QUERIDO
+    for(i=0;i<8;i++){
+        printf("Entry tension from ina %d: ", i +1);
+        scanf("%f", &ina_values[i][0]);
+        printf("\nEntry current from ina %d: ", i +1);
+        scanf("%f", &ina_values[i][1]);
+        printf("\n");
+    }//APAGAR ESSE "FOR" DEPOIS, USEI PARA TESTAR
+
+    //PUT DATA INTO FILE
+    for(i=0;i<8;i++){
+        ftoa(ina_values[i][0], aux1, 5);
+        tenBlock(aux1);
+        strcat(values,aux1);
+        ftoa(ina_values[i][1], aux1, 5);
+        tenBlock(aux1);
+        strcat(values,aux1);
+    }
+    valueGetter(PS_NUMBER, &i);
+    writeMessage(PS_FILE, values,i+1, PS_SIZE, 0);
+    valueSetter(PS_NUMBER, i+1);
+
+    return 0;
+}
 
 int sendlandeira(char* package){
     FILE *fp = fopen("partidocomunista", "ab");
@@ -1193,7 +1692,7 @@ int livefeed_tx(char *FILE_NAME){
 
 
     for(i = 0; i < (packages_num - 1); i++){
-        blockBuilder(block, 6, i);
+        //blockBuilder(block, 6, i);
         packageCreator(TM_NUMBER, TM_CYCLE, block, package);
         sendlandeira(block);
     }
@@ -1234,11 +1733,10 @@ int CubeSatTest(){
         scanf ("%d", &mode);
         printf("\n Digite o num do pack - ");
         scanf ("%d", &pack);
-        printf("\n Digite a msg - ");
-        scanf("%s",msg);
+
 
         msg[0]=pack;
-        msg[1]=1;
+        msg[1]=0;
         msg[2]=mode;
 
         msg[123]=pack;
@@ -1247,7 +1745,7 @@ int CubeSatTest(){
         msg[252]=pack;
         msg[253]=mode;
 
-        writeMessage(NEW_TM, msg, 0, PACK_SIZE, 0);
+        writeMessage(NEW_TC, msg, 0, PACK_SIZE, 0);
 
         printf("\nDigite 1 para sair.\n");
         scanf ("%d", &i);
@@ -1255,6 +1753,8 @@ int CubeSatTest(){
 
     return 0;
 }
+
+
 
 
 //Install functions
@@ -1281,8 +1781,8 @@ int createFile(char *file_name){
 int createZenithFiles(){
 
     int i = 0;
-    int counter = 0;
-    int aux[19];
+    int counter;
+    int aux[21];
 
     aux[ 0] = createFile(CHECK_POWERED);
     aux[ 1] = createFile(NEW_TM);
@@ -1295,23 +1795,22 @@ int createZenithFiles(){
     aux[ 8] = createFile(TC_CYCLE);
     aux[ 9] = createFile(MISSED_PACKAGES);
     aux[10] = createFile(MODE_FILE);
-    aux[11] = createFile(HEALTH_FILE);
-    aux[12] = createFile(HEALTH_NUMBER);
-    aux[13] = createFile(PS_FILE);
-    aux[14] = createFile(PS_NUMBER);
-    aux[15] = createFile(ADC_FILE);
-    aux[16] = createFile(ADC_NUMBER);
-    aux[17] = createFile(CV_FILE);
-    aux[18] = createFile(CV_NUMBER);
+    aux[11] = createFile(PS_FILE);
+    aux[12] = createFile(PS_NUMBER);
+    aux[13] = createFile(ADC_TX_FILE);
+    aux[14] = createFile(ADC_TX_NUMBER);
+    aux[15] = createFile(ADC_RX_FILE);
+    aux[16] = createFile(ADC_RX_NUMBER);
+    aux[17] = createFile(FILE_SLAVE);
+    aux[18] = createFile(FILE_MASTER);
+    aux[19] = createFile(STD_LOOP);
+    aux[20] = createFile(PS_AUX);
 
-    for (i=0;i==19;i++){
-        if (aux[i] == 0){
-            counter ++;
-        }
-    }
+
+    for (i=0;i<21;i++){ if (aux[i] == 0){ counter ++; }}
 
     if   (counter>0) { printf("\n%d files cannot be created", counter); return 1;}
-    else { printf("\nFiles successfully created");                      return 0;}
+    else { printf("\nFiles successfully created\n");                    return 0;}
 }
 
 int compileCodes(int mode){
@@ -1320,7 +1819,7 @@ int compileCodes(int mode){
         printf("Compiling cube.c file... \n");
         delay(600000);
         system("gcc cube.c -o cube -lm");
-        printf("File cube.c was already compiled.");
+        printf("File cube.c was already compiled.\n");
         delay(600000);
     }
     else if (mode == 2){
@@ -1334,7 +1833,7 @@ int compileCodes(int mode){
         printf("Compiling cube.c file... \n");
         delay(600000);
         system("gcc cube.c -o cube -lm");
-        printf("File cube.c was already compiled.");
+        printf("File cube.c was already compiled.\n");
         delay(600000);
         printf("Compiling base.c file... \n");
         delay(600000);
@@ -1343,7 +1842,7 @@ int compileCodes(int mode){
         delay(600000);
     }
     else {
-        printf("This mode of compilation is not valid");
+        printf("This mode of compilation is not valid\n");
     }
     return 0;
 }
@@ -1362,26 +1861,8 @@ int installer(){
     printf("Compiling files... \n");
     compileCodes(mode);
     delay(1000000);
-    printf("zenith.h is already installed!");
+    printf("zenith.h is already installed!\n\n");
     delay(2000000);
 
     return 0;
 }
-
-/*
-int PS(){
-
-    typedef struct {
-        float shuntvoltage = 0;
-        float busvoltage = 0;
-        float current_mA = 0;
-        float loadvoltage = 0;
-    } inaData;
-
-    inaData ina_1, ina_2, ina_3, ina_4, ina_5, ina_6;
-
-    //READ_INAS_VALUES;
-    //CONVERT_UNITS
-    //SAVE_IN_FILE;
-}
-*/
