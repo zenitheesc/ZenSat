@@ -594,7 +594,7 @@ int initializingCubeSat(int check){
         valueSetter(PS_NUMBER      ,  0);
         valueSetter(ADC_TX_NUMBER  ,  0);
         valueSetter(ADC_RX_NUMBER  ,  0);
-        valueSetter(STD_LOOP,      , 20);
+        valueSetter(STD_LOOP       , 20);
         createBackup();
 
     }
