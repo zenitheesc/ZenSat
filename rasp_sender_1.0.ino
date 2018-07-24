@@ -9,6 +9,7 @@ int ledState = LOW;
 unsigned long previousMillis = 0;     
 const long interval = 1000;  
 String lora_data = "";
+String oi = "oi jonny";
 
 void setup() {
   Serial.begin(9600);
@@ -76,7 +77,6 @@ void receive_data(){
 
 void rasp_pediu() {
   char chardata[32];
-  lora_data.toCharArray(chardata, 32);
+  oi.toCharArray(chardata, 32);
   Wire.write(chardata); 
 }
-
