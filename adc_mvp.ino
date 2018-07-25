@@ -3,13 +3,14 @@
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 #include <PID_v1.h>
-
+#include <Wire.h>
 int w = 0;
 int set_time = 10;
 float k1 = 1;
 int k2 = 80;
 int elapsed_time = 0;
 int acel_time = 0;
+int desacel_time = 0;
 int Pin = 9;
 bool Dir = 1;
 int Dir_Pin = 7;
@@ -18,22 +19,13 @@ long start_time_ms = 5000;
 int start_vel = 50;
 long start_time = 0;
 int vel = 0;
+int acel_torque = 10;
+int desacel_torque = -10;
+int e = 0;
 int encoder_speed = 0;
-int action = 0;
-int read_speed = 0;
-int slow_rate = 0;
-int medium_rate = 0;
+int multiplier = 1;
+
 double Setpoint, Input, Output;
-String stringdata = "";
-int pos = 1;
-int distance = 0;
-int mode_int = 10;
-String  mode_1_pos = "";
-String  mode_2_pos = "";
-String  mode_3_pos = "";
-String  mode_4_pos = ""; 
-unsigned long previousMillis = 0;
-bool _flag = false;
 PID myPID(&Input, &Output, &Setpoint,0.2,1,0.1, DIRECT);
 
 #define BNO055_SAMPLERATE_DELAY_MS (100)
@@ -49,6 +41,7 @@ void setup(void)
     Serial.print("BNO falhou");
     while(1);
   }
+
   delay(1000);
   int8_t temp = bno.getTemp();
   Serial.print("Current Temperature: ");
@@ -58,43 +51,62 @@ void setup(void)
   bno.setExtCrystalUse(true);
   pinMode(Pin, OUTPUT);
   pinMode(Dir_Pin, OUTPUT);
-  //start();
+  start();
   imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
-  w = -1*gyro.z();
+  w = gyro.z();
   Input = w;
   Setpoint = 0;
-  myPID.SetOutputLimits(-100, 50);
+  myPID.SetOutputLimits(-100, 150);
   myPID.SetMode(AUTOMATIC);
-  start();
 }
 
 void loop(void)
 {
-  // Possible vector values can be:
-  // - VECTOR_ACCELEROMETER - m/s^2
-  // - VECTOR_MAGNETOMETER  - uT
-  // - VECTOR_GYROSCOPE     - rad/s
-  // - VECTOR_EULER         - degrees
-  // - VECTOR_LINEARACCEL   - m/s^2
-  // - VECTOR_GRAVITY       - m/s^2
-  imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
-  imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
-  wait();
+  request_action();
 }
-
-void wait(){
-  delay(500);
-  Serial.println("esperando");
-  analogWrite(9, 200);
-  //if (change_mode()){
-  //  set_mode(mode_1_pos, mode_2_pos, mode_3_pos, mode_4_pos);
-  //}
-}
-
-
 void start(){
-  digitalWrite(Dir_Pin, Dir);
-  analogWrite(Pin, 100);
-  delay(start_time_ms);
-  vel = 100;
+  delay(1000);
+  set_dir();
+  stabilize();
 }
+
+void set_dir(){
+  float set_dir_speed = get_gyro_z();
+  if (set_dir_speed > 0){
+    digitalWrite(Dir_Pin, 1);
+    multiplier = 1;
+  }else{
+    digitalWrite(Dir_Pin, 0);
+    multiplier = -1;
+  }
+}
+
+float get_gyro_z(){
+  imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+  float gyro_z = gyro.z();
+  return gyro_z;
+}
+
+void stabilize(){
+  while(1){
+  imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+  delay(300);
+  w = gyro.z()*multiplier;
+  Input = w;
+  myPID.Compute();
+  vel = 100 + Output;
+  Serial.println(vel);
+  analogWrite(Pin, vel);
+  }
+}
+
+void request_action(){
+  Wire.requestFrom(9, 1); 
+  while (Wire.available()) {  
+    char c = Wire.read();
+  }
+  if (c == 'r'){
+    start();
+  }
+}
+    
