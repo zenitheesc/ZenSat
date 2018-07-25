@@ -27,6 +27,7 @@ int multiplier = 1;
 String direction_rw = "";
 bool run_rw = false;
 float boost = 1;
+String stringdata = "";
 
 double Setpoint, Input, Output;
 PID myPID(&Input, &Output, &Setpoint,0.2,1,0.1, DIRECT);
@@ -65,6 +66,7 @@ void setup(void)
 
 void loop(void)
 {
+  send_status();
   request_action();
   delay(300);
   Serial.println("on loop");
@@ -98,6 +100,7 @@ float get_gyro_z(){
 
 void stabilize(){
   while(1){
+    send_status();
     Serial.print("on stabilize, direction");Serial.println(direction_rw);
     imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
     delay(300);
@@ -127,5 +130,34 @@ void request_action(){
   if (c == 'r'){
     run_rw = true;
   }
+}
+
+void send_status(){
+  stringdata.concat("r"); stringdata.concat(";");
+  stringdata.concat(get_gyro_z()); stringdata.concat(";");
+  stringdata.concat(get_euler_x()); stringdata.concat(";");
+  stringdata.concat(request_encoder()); stringdata.concat(";");
+  stringdata.concat(0); stringdata.concat(";");
+  stringdata.concat(bno.getTemp()); stringdata.concat(";");
+  char chardata[32];
+  stringdata.toCharArray(chardata, 32);
+  Wire.beginTransmission(9);
+  Wire.write(chardata);             
+  Wire.endTransmission();  
+  stringdata = "";
+}
+
+float get_euler_x(){
+  imu::Vector<3> euler = bno.getVector(Adafruit_BNO055::VECTOR_EULER);
+  float euler_x = euler.x();
+  return euler_x;
+}
+
+int request_encoder(){
+  Wire.requestFrom(8, 1);    
+  while (Wire.available()) { 
+    int requested_speed = Wire.read()*120; 
+    return(requested_speed);
+  } 
 }
     
