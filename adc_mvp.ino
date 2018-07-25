@@ -25,9 +25,9 @@ int e = 0;
 int encoder_speed = 0;
 int multiplier = 1;
 String direction_rw = "";
-bool run_rw = false;
 float boost = 1;
 String stringdata = "";
+char c = 'o';
 
 double Setpoint, Input, Output;
 PID myPID(&Input, &Output, &Setpoint,0.2,1,0.1, DIRECT);
@@ -73,7 +73,7 @@ void loop(void)
   start();
 }
 void start(){
-  if ( abs(get_gyro_z()) > 200 && run_rw){
+  if ( abs(get_gyro_z()) > 200 && request_action()){
     set_dir();
     stabilize();
   }
@@ -99,7 +99,7 @@ float get_gyro_z(){
 }
 
 void stabilize(){
-  while(1){
+  while(request_action()){
     send_status();
     Serial.print("on stabilize, direction");Serial.println(direction_rw);
     imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
@@ -121,14 +121,16 @@ void stabilize(){
   }
 }
 
-void request_action(){
-  char c = 'o';
+bool request_action(){
   Wire.requestFrom(9, 1); 
   while (Wire.available()) {  
     c = Wire.read();
   }
+  Serial.println(c);
   if (c == 'r'){
-    run_rw = true;
+    return true;
+  }else{
+    return false;
   }
 }
 
@@ -160,4 +162,6 @@ int request_encoder(){
     return(requested_speed);
   } 
 }
+    
+
     
