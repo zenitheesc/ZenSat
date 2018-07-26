@@ -41,6 +41,8 @@ char str_g[33] = "";
 char str_h[33] = "";
 String string_data = "";
 
+bool concat_flag = 0;
+
 void setup(){
 
     pinMode(6, OUTPUT);
@@ -59,7 +61,7 @@ void setup(){
       while (1);
     }
     LoRa.setSignalBandwidth(125E3);
-    LoRa.setSpreadingFactor(7);
+    LoRa.setSpreadingFactor(11);
     LoRa.enableCrc();
 
     int packetSize = 0;
@@ -143,12 +145,20 @@ void receive_from_rasp(int howMany) {
     while(Wire.available()){
       c = Wire.read();
       //Serial.println(c);
-      string_data.concat(c);
+      if (c == 'Z'){
+        concat_flag = true;
+      }
+      if (concat_flag){
+        string_data.concat(c);
+      }
+      
         if (c == 'x'){
           Serial.println("teste do cesco");Serial.println(string_data); 
+          delay(200);
           LoRa.beginPacket();
           LoRa.print(string_data);
           LoRa.endPacket();
+          concat_flag = false;
           string_data = "";
         }
     }
