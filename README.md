@@ -89,7 +89,7 @@ vibration, are the main focuses of this subsystem
 Check out the official documentation [here](https://github.com/zenitheesc/ZenSat_1.0/blob/master/ZenSat%20v.1.0.pdf).
 
 <p align = "center">
-<img src="https://github.com/zenitheesc/ZenSat_1.0/blob/master/IMAGES/render.jpg?raw=true" alt="drawing" width="300" align="center"/>
+<img src="https://github.com/zenitheesc/ZenSat_1.0/blob/master/IMAGES/render.jpg?raw=true" alt="drawing" width="800" align="center"/>
 </p>
 
 
