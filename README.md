@@ -1,6 +1,6 @@
 
 
-<h1 align="center" style="color:white; background-color:black">USP Sat-I</h1>
+<h1 align="center" style="color:white; background-color:black">ZenSat 1.0</h1>
 <h4 align="center">This is an Open Hardware and Software cubesat developed by Zenith EESC-USP for the Cubedesign 2019.</h4>
 
 <p align="center">
@@ -33,7 +33,7 @@
     </a>
 </p>
 
-The project was based on distributed processing architecture and using microcontrollers with ARM architecture. The Embedded System was composed by six subsystems:
+Aiming to participate in the first CubeDesign in 2018, Zenith designed its first nanosatellite prototype, which was named ”ZenSat”. This project was a 2U CubeSat for  imaging missions in the competition. It is worth mentioning that the focus of the project was not to validate a nanosatellite for flight, but to enable a first contact between the group members and the development of a nanosatellite.
 
 <a href="https://github.com/zenitheesc/USPSat-AE1/tree/master/M%C3%B3dulo_Ribatski%20v.1.0"><h2>1. Thermal management</h2></a>
 
@@ -98,12 +98,17 @@ Conservation of Angular Momentum, manages to act in the attitude of the satellit
 <img src="https://github.com/zenitheesc/Zenith-Wiki/blob/gh-pages/assets/images/str.jpg?raw=true"/>
 </p>
 
-
 Finally, we have the subsystem responsible for the physical integration of all
 the subsystems described earlier. All manufacturing issues involving
-the physical structure of USPSat is the responsibility of the structures subsystem. THE
+the physical structure of ZenSat is the responsibility of the structures subsystem. The
 determination of the materials used, the choice of manufacturing processes and display of all components, aiming at a satisfactory performance in the
 vibration, are the main focuses of this subsystem
+
+<p align = "center">
+<img src="https://raw.githubusercontent.com/zenitheesc/ZenSat_1.0/master/simula%C3%A7%C3%A3o.PNG"/>
+</p>
+
+
 
 ## Official Documentation
 
