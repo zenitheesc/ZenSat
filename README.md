@@ -1,7 +1,7 @@
 
 
 <h1 align="center" style="color:white; background-color:black">ZenSat 1.0</h1>
-<h4 align="center">This is an Open Hardware and Software cubesat developed by Zenith EESC-USP for the Cubedesign 2019.</h4>
+<h4 align="center">This is an Open Hardware and Software cubesat developed by Zenith EESC-USP for the Cubedesign 2018.</h4>
 
 <p align="center">
 	<a href="http://zenith.eesc.usp.br/">
@@ -44,7 +44,7 @@ Also it performs conversions of battery voltage levels to the levels requested w
 hardware, making the necessary distribution, as well as controlling the loading of batteries through solar panels.
 
 <p align = "center">
-<img src="https://raw.githubusercontent.com/zenitheesc/Zenith-Wiki/gh-pages/assets/images/eps2.jpg"/>
+<img src=""/>
 </p>
 
 
@@ -53,12 +53,16 @@ hardware, making the necessary distribution, as well as controlling the loading 
 <a href="https://github.com/zenitheesc/ZenSat_1.0/tree/master/COM%20-%20Command%20and%20Telemetry"><h2>COM - Command and Telemetry</h2></a>
 It is responsible by the bidirectional telemetry in cubesat. This System has two LoRa radios, which communicate with the CTRL Subsystem
 
+<p align = "center">
+<img src=""/>
+</p>
+
 
 <a href="https://github.com/zenitheesc/ZenSat_1.0/tree/master/ADC%20-%20Attitude%20Determination%20and%20Control"><h2> ADC - Attitude Determination and Control </h2></a>
 The entire stabilization and pointing system must be done necessary to fulfill the competition missions. For this, the reading is done necessary sensors, activating a reaction wheel, which, by means of the Law of Conservation of Angular Momentum, manages to act in the attitude of the satellite.
 
 <p align = "center">
-<img src="https://github.com/zenitheesc/ZenSat_1.0/blob/master/aberto.PNG?raw=true"/>
+<img src=""/>
 </p>
 
 
@@ -80,9 +84,9 @@ vibration, are the main focuses of this subsystem
 Check out the official documentation [here](https://github.com/zenitheesc/USPSat-AE1/blob/master/USPSat_Report.pdf).
 
 <p align = "center">
-<img src="https://github.com/zenitheesc/Zenith-Wiki/blob/gh-pages/assets/images/20190706_203958.jpg" alt="drawing" width="300" align="center"/>
+<img src="" alt="drawing" width="300" align="center"/>
 
-<img src="https://github.com/zenitheesc/Zenith-Wiki/blob/gh-pages/assets/images/20190722_043926.jpg" alt="drawing" width="300" align="center"/>
+<img src="" alt="drawing" width="300" align="center"/>
 </p>
 
 
