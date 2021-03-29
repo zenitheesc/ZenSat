@@ -50,24 +50,9 @@ hardware, making the necessary distribution, as well as controlling the loading 
 
 
 
-<a href="https://github.com/zenitheesc/USPSat-AE1/tree/master/Caurin_CDH%20v.1.0"><h2>4. Comanding and Data Handling</h2></a>
+<a href="https://github.com/zenitheesc/ZenSat_1.0/tree/master/COM%20-%20Command%20and%20Telemetry"><h2>COM - Command and Telemetry</h2></a>
+It is responsible by the bidirectional telemetry in cubesat. This System has two LoRa radios, which communicate with the CTRL Subsystem
 
-<p align = "center">
-<img src="https://github.com/zenitheesc/Zenith-Wiki/blob/gh-pages/assets/images/comm.jpg?raw=true"/>
-</p>
-
-It concentrates one of the processing within CubeSat. It is responsible for managing the information
-present in the prototype's internal network, by managing the information received and sent to the Control Base and control of the deployment of the antennas.
-
-<a href="https://github.com/zenitheesc/USPSat-AE1/tree/master/Comin_CTR%20v.1.0"><h2>5. Computational Vision</h2></a>
-
-<p align = "center">
-<img src="https://github.com/zenitheesc/Zenith-Wiki/blob/gh-pages/assets/images/process.jpg?raw=true"/>
-</p>
-It concentrates one of the
-processing within CubeSat. It is responsible for managing the information
-present in the prototype's internal network, by managing the information received
-and sent to the Control Base and control of the deployment of the antennas.
 
 <a href="https://github.com/zenitheesc/ZenSat_1.0/tree/master/ADC%20-%20Attitude%20Determination%20and%20Control"><h2> ADC - Attitude Determination and Control </h2></a>
 The entire stabilization and pointing system must be done necessary to fulfill the competition missions. For this, the reading is done necessary sensors, activating a reaction wheel, which, by means of the Law of Conservation of Angular Momentum, manages to act in the attitude of the satellite.
