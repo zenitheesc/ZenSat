@@ -35,19 +35,13 @@
 
 Aiming to participate in the first CubeDesign in 2018, Zenith designed its first nanosatellite prototype, which was named ”ZenSat”. This project was a 2U CubeSat for  imaging missions in the competition. It is worth mentioning that the focus of the project was not to validate a nanosatellite for flight, but to enable a first contact between the group members and the development of a nanosatellite.
 
-<a href="https://github.com/zenitheesc/USPSat-AE1/tree/master/Varela-Logical_EPS%20v.1.0"><h2>PS - Power Supply</h2></a>
-Ensures the monitoring and control of EPS panel parameters,
-that is, it performs the measurement of voltage and current levels at various points on the CubeSat;
-monitors the temperature of the batteries and acts to keep it always positive, in addition to
-carry out communication with other subsystems.
-Also it performs conversions of battery voltage levels to the levels requested within the
-hardware, making the necessary distribution, as well as controlling the loading of batteries through solar panels.
+
+<a href="https://github.com/zenitheesc/ZenSat_1.0/tree/master/ADC%20-%20Attitude%20Determination%20and%20Control"><h2> ADC - Attitude Determination and Control </h2></a>
+The entire stabilization and pointing system must be done necessary to fulfill the competition missions. For this, the reading is done necessary sensors, activating a reaction wheel, which, by means of the Law of Conservation of Angular Momentum, manages to act in the attitude of the satellite.
 
 <p align = "center">
 <img src=""/>
 </p>
-
-
 
 
 <a href="https://github.com/zenitheesc/ZenSat_1.0/tree/master/COM%20-%20Command%20and%20Telemetry"><h2>COM - Command and Telemetry</h2></a>
@@ -57,9 +51,20 @@ It is responsible by the bidirectional telemetry in cubesat. This System has two
 <img src=""/>
 </p>
 
+<a href="https://github.com/zenitheesc/ZenSat_1.0/tree/master/COM%20-%20Command%20and%20Telemetry"><h2>CTRL - Control</h2></a>
+The Control System is the main component of the project. This system is responsible for data analysis, decision making and controlling the others systems
+<p align = "center">
+<img src=""/>
+</p>
 
-<a href="https://github.com/zenitheesc/ZenSat_1.0/tree/master/ADC%20-%20Attitude%20Determination%20and%20Control"><h2> ADC - Attitude Determination and Control </h2></a>
-The entire stabilization and pointing system must be done necessary to fulfill the competition missions. For this, the reading is done necessary sensors, activating a reaction wheel, which, by means of the Law of Conservation of Angular Momentum, manages to act in the attitude of the satellite.
+
+<a href="https://github.com/zenitheesc/ZenSat_1.0/tree/master/PS%20-%20Power%20Supply"><h2>PS - Power Supply</h2></a>
+Ensures the monitoring and control of EPS panel parameters,
+that is, it performs the measurement of voltage and current levels at various points on the CubeSat;
+monitors the temperature of the batteries and acts to keep it always positive, in addition to
+carry out communication with other subsystems.
+Also it performs conversions of battery voltage levels to the levels requested within the
+hardware, making the necessary distribution, as well as controlling the loading of batteries through solar panels.
 
 <p align = "center">
 <img src=""/>
