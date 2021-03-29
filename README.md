@@ -35,34 +35,20 @@
 
 Aiming to participate in the first CubeDesign in 2018, Zenith designed its first nanosatellite prototype, which was named ”ZenSat”. This project was a 2U CubeSat for  imaging missions in the competition. It is worth mentioning that the focus of the project was not to validate a nanosatellite for flight, but to enable a first contact between the group members and the development of a nanosatellite.
 
-<a href="https://github.com/zenitheesc/USPSat-AE1/tree/master/M%C3%B3dulo_Ribatski%20v.1.0"><h2>1. Thermal management</h2></a>
-
-<p align = "center">
-<img src="https://raw.githubusercontent.com/zenitheesc/Zenith-Wiki/gh-pages/assets/images/thermmgn.jpg"/>
-</p>
-
-This subsystem is primarily responsible for
-for the active thermal control of the batteries, as proposed by the competition,
-in addition to supporting the deployment system of the nanosatellite antennas.
-
-<a href="https://github.com/zenitheesc/USPSat-AE1/tree/master/Varela-Logical_EPS%20v.1.0"><h2>2. Logical EPS</h2></a>
-<p align = "center">
-<img src="https://raw.githubusercontent.com/zenitheesc/Zenith-Wiki/gh-pages/assets/images/eps2.jpg"/>
-</p>
-
+<a href="https://github.com/zenitheesc/USPSat-AE1/tree/master/Varela-Logical_EPS%20v.1.0"><h2>PS - Power Supply</h2></a>
 Ensures the monitoring and control of EPS panel parameters,
 that is, it performs the measurement of voltage and current levels at various points on the CubeSat;
 monitors the temperature of the batteries and acts to keep it always positive, in addition to
 carry out communication with other subsystems.
-
-<a href="https://github.com/zenitheesc/USPSat-AE1/tree/master/London-Power_EPS%20v.1.1"><h2>3. Power EPS</h2></a>
+Also it performs conversions of battery voltage levels to the levels requested within the
+hardware, making the necessary distribution, as well as controlling the loading of batteries through solar panels.
 
 <p align = "center">
-<img src="https://raw.githubusercontent.com/zenitheesc/Zenith-Wiki/gh-pages/assets/images/eps1.jpg"/>
+<img src="https://raw.githubusercontent.com/zenitheesc/Zenith-Wiki/gh-pages/assets/images/eps2.jpg"/>
 </p>
 
-Functioning as an extension of the previous subsystem, it performs conversions of battery voltage levels to the levels requested within the
-hardware, making the necessary distribution, as well as controlling the loading of batteries through solar panels.
+
+
 
 <a href="https://github.com/zenitheesc/USPSat-AE1/tree/master/Caurin_CDH%20v.1.0"><h2>4. Comanding and Data Handling</h2></a>
 
@@ -85,6 +71,10 @@ and sent to the Control Base and control of the deployment of the antennas.
 
 <a href="https://github.com/zenitheesc/ZenSat_1.0/tree/master/ADC%20-%20Attitude%20Determination%20and%20Control"><h2> ADC - Attitude Determination and Control </h2></a>
 The entire stabilization and pointing system must be done necessary to fulfill the competition missions. For this, the reading is done necessary sensors, activating a reaction wheel, which, by means of the Law of Conservation of Angular Momentum, manages to act in the attitude of the satellite.
+
+<p align = "center">
+<img src="https://github.com/zenitheesc/ZenSat_1.0/blob/master/aberto.PNG?raw=true"/>
+</p>
 
 
 <a href="https://github.com/zenitheesc/ZenSat_1.0/tree/master/STT%20-%20Structure"><h2> STT - Structure </h2></a>
