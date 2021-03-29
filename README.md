@@ -40,7 +40,7 @@ Aiming to participate in the first CubeDesign in 2018, Zenith designed its first
 The entire stabilization and pointing system must be done necessary to fulfill the competition missions. For this, the reading is done necessary sensors, activating a reaction wheel, which, by means of the Law of Conservation of Angular Momentum, manages to act in the attitude of the satellite.
 
 <p align = "center">
-<img src=""/>
+<img src="https://github.com/zenitheesc/ZenSat_1.0/blob/master/IMAGES/adc.PNG?raw=true"/>
 </p>
 
 
@@ -48,13 +48,13 @@ The entire stabilization and pointing system must be done necessary to fulfill t
 It is responsible by the bidirectional telemetry in cubesat. This System has two LoRa radios, which communicate with the CTRL Subsystem
 
 <p align = "center">
-<img src=""/>
+<img src="https://github.com/zenitheesc/ZenSat_1.0/blob/master/IMAGES/antena.PNG?raw=true"/>
 </p>
 
 <a href="https://github.com/zenitheesc/ZenSat_1.0/tree/master/COM%20-%20Command%20and%20Telemetry"><h2>CTRL - Control</h2></a>
 The Control System is the main component of the project. This system is responsible for data analysis, decision making and controlling the others systems
 <p align = "center">
-<img src=""/>
+<img src="https://github.com/zenitheesc/ZenSat_1.0/blob/master/IMAGES/diagrama%20Geral.PNG?raw=true"/>
 </p>
 
 
@@ -67,7 +67,7 @@ Also it performs conversions of battery voltage levels to the levels requested w
 hardware, making the necessary distribution, as well as controlling the loading of batteries through solar panels.
 
 <p align = "center">
-<img src=""/>
+<img src="https://github.com/zenitheesc/ZenSat_1.0/blob/master/IMAGES/eps.PNG?raw=true"/>
 </p>
 
 
@@ -79,14 +79,14 @@ determination of the materials used, the choice of manufacturing processes and d
 vibration, are the main focuses of this subsystem
 
 <p align = "center">
-<img src="https://raw.githubusercontent.com/zenitheesc/ZenSat_1.0/master/simula%C3%A7%C3%A3o.PNG"/>
+<img src="https://github.com/zenitheesc/ZenSat_1.0/blob/master/IMAGES/simula%C3%A7%C3%A3o.PNG?raw=true"/>
 </p>
 
 
 
 ## Official Documentation
 
-Check out the official documentation [here](https://github.com/zenitheesc/USPSat-AE1/blob/master/USPSat_Report.pdf).
+Check out the official documentation [here](https://github.com/zenitheesc/ZenSat_1.0/blob/master/ZenSat%20v.1.0.pdf).
 
 <p align = "center">
 <img src="" alt="drawing" width="300" align="center"/>
