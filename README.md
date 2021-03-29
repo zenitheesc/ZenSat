@@ -83,21 +83,11 @@ processing within CubeSat. It is responsible for managing the information
 present in the prototype's internal network, by managing the information received
 and sent to the Control Base and control of the deployment of the antennas.
 
-<a href="https://github.com/zenitheesc/USPSat-AE1/tree/master/Alves_ADC%20v.1.0"><h2> 6. Attitude Control </h2></a>
+<a href="https://github.com/zenitheesc/ZenSat_1.0/tree/master/ADC%20-%20Attitude%20Determination%20and%20Control"><h2> ADC - Attitude Determination and Control </h2></a>
+The entire stabilization and pointing system must be done necessary to fulfill the competition missions. For this, the reading is done necessary sensors, activating a reaction wheel, which, by means of the Law of Conservation of Angular Momentum, manages to act in the attitude of the satellite.
 
-<p align = "center">
-<img src="https://github.com/zenitheesc/Zenith-Wiki/blob/gh-pages/assets/images/ctr.jpg?raw=true"/>
-</p>
 
-The entire stabilization and pointing system must be done necessary to fulfill the competition missions. For this, the reading is done necessary sensors, activating a reaction wheel, which, by means of the Law of
-Conservation of Angular Momentum, manages to act in the attitude of the satellite.
-
-## 7. Structures
-
-<p align = "center">
-<img src="https://github.com/zenitheesc/Zenith-Wiki/blob/gh-pages/assets/images/str.jpg?raw=true"/>
-</p>
-
+<a href="https://github.com/zenitheesc/ZenSat_1.0/tree/master/STT%20-%20Structure"><h2> STT - Structure </h2></a>
 Finally, we have the subsystem responsible for the physical integration of all
 the subsystems described earlier. All manufacturing issues involving
 the physical structure of ZenSat is the responsibility of the structures subsystem. The
