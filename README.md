@@ -36,7 +36,7 @@
 Aiming to participate in the first CubeDesign in 2018, Zenith designed its first nanosatellite prototype, which was named ”ZenSat”. This project was a 2U CubeSat for imaging missions in the competition. It is worth mentioning that the focus of the project was not to validate a nanosatellite for flight but to enable a first contact between the group members and the development of a nanosatellite.
 
 <p align = "center">
-<img src="https://github.com/zenitheesc/ZenSat_1.0/blob/master/IMAGES/block-diagram.png?raw=true"/>
+<img src="https://github.com/zenitheesc/ZenSat_1.0/blob/master/IMAGES/block-diagram.jpg?raw=true"/>
 </p>
 
 <a href="https://github.com/zenitheesc/ZenSat_1.0/tree/master/ADC%20-%20Attitude%20Determination%20and%20Control"><h2> ADC - Attitude Determination and Control </h2></a>
