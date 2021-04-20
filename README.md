@@ -1,7 +1,7 @@
 
 
-<h1 align="center" style="color:white; background-color:black">ZenSat 1.0</h1>
-<h4 align="center">This is an Open Hardware and Software cubesat developed by Zenith EESC-USP for the Cubedesign 2018.</h4>
+<h1 align="center" style="color:white; background-color:black">ZenSat</h1>
+<h4 align="center">This is an Open Hardware and Software CubeSat developed by Zenith EESC-USP for the CubeDesign 2018.</h4>
 
 <p align="center">
 	<a href="http://zenith.eesc.usp.br/">
@@ -33,8 +33,11 @@
     </a>
 </p>
 
-Aiming to participate in the first CubeDesign in 2018, Zenith designed its first nanosatellite prototype, which was named ”ZenSat”. This project was a 2U CubeSat for  imaging missions in the competition. It is worth mentioning that the focus of the project was not to validate a nanosatellite for flight, but to enable a first contact between the group members and the development of a nanosatellite.
+Aiming to participate in the first CubeDesign in 2018, Zenith designed its first nanosatellite prototype, which was named ”ZenSat”. This project was a 2U CubeSat for imaging missions in the competition. It is worth mentioning that the focus of the project was not to validate a nanosatellite for flight but to enable a first contact between the group members and the development of a nanosatellite.
 
+<p align = "center">
+<img src="https://github.com/zenitheesc/ZenSat_1.0/blob/master/IMAGES/block-diagram.png?raw=true"/>
+</p>
 
 <a href="https://github.com/zenitheesc/ZenSat_1.0/tree/master/ADC%20-%20Attitude%20Determination%20and%20Control"><h2> ADC - Attitude Determination and Control </h2></a>
 The entire stabilization and pointing system must be done necessary to fulfill the competition missions. For this, the reading is done necessary sensors, activating a reaction wheel, which, by means of the Law of Conservation of Angular Momentum, manages to act in the attitude of the satellite.
@@ -81,7 +84,6 @@ vibration, are the main focuses of this subsystem
 <p align = "center">
 <img src="https://github.com/zenitheesc/ZenSat_1.0/blob/master/IMAGES/simula%C3%A7%C3%A3o.PNG?raw=true"/>
 </p>
-
 
 
 ## Official Documentation
